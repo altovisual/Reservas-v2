@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Star, Phone, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Star, Phone, ToggleLeft, ToggleRight, Mail, X } from 'lucide-react';
+import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
-const especialidades = ['Manicure', 'Pedicure', 'Uñas Acrílicas', 'Uñas en Gel', 'Nail Art', 'Depilación', 'Cejas y Pestañas'];
-const colores = ['#EC4899', '#8B5CF6', '#06B6D4', '#F59E0B', '#10B981', '#EF4444'];
+const especialidadesLista = ['Manicure', 'Pedicure', 'Uñas Acrílicas', 'Uñas en Gel', 'Nail Art', 'Depilación', 'Cejas y Pestañas'];
+const colores = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'];
 
 const GestionEspecialistas = () => {
-  const navigate = useNavigate();
   const [especialistas, setEspecialistas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
-  const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', especialidades: [], color: '#EC4899' });
+  const [form, setForm] = useState({ nombre: '', apellido: '', telefono: '', email: '', especialidades: [], color: '#10B981' });
 
   useEffect(() => {
     cargarEspecialistas();
@@ -68,7 +67,7 @@ const GestionEspecialistas = () => {
       telefono: esp.telefono || '',
       email: esp.email || '',
       especialidades: esp.especialidades || [],
-      color: esp.color || '#EC4899'
+      color: esp.color || '#10B981'
     });
     setModal(esp._id);
   };
@@ -82,127 +81,177 @@ const GestionEspecialistas = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full"></div>
-      </div>
+      <AdminLayout title="Gestión de Especialistas" subtitle="Cargando...">
+        <div className="flex justify-center py-12">
+          <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-2">
-          <ArrowLeft className="w-5 h-5" /> Volver
-        </button>
-        <h1 className="text-xl font-bold mt-2">Gestión de Especialistas</h1>
-      </div>
-
-      <div className="p-4">
+    <AdminLayout title="Gestión de Especialistas" subtitle="Administra el equipo de trabajo">
+      {/* Header con botón */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="text-sm text-gray-500">
+          {especialistas.length} especialistas registrados
+        </div>
         <button
-          onClick={() => { setForm({ nombre: '', apellido: '', telefono: '', email: '', especialidades: [], color: '#EC4899' }); setModal('nuevo'); }}
-          className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 mb-4"
+          onClick={() => { setForm({ nombre: '', apellido: '', telefono: '', email: '', especialidades: [], color: '#10B981' }); setModal('nuevo'); }}
+          className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
         >
           <Plus className="w-5 h-5" /> Nuevo Especialista
         </button>
+      </div>
 
-        <div className="space-y-3">
-          {especialistas.map(esp => (
-            <div key={esp._id} className="bg-white rounded-xl shadow p-4">
-              <div className="flex items-center gap-4">
+      {/* Grid de especialistas */}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {especialistas.map(esp => (
+          <div key={esp._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-5">
+              <div className="flex items-start gap-4">
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
-                  style={{ backgroundColor: esp.color || '#EC4899' }}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
+                  style={{ backgroundColor: esp.color || '#10B981' }}
                 >
-                  {esp.nombre[0]}
+                  {esp.nombre[0]}{esp.apellido?.[0] || ''}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">{esp.nombre} {esp.apellido}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span>{esp.calificacionPromedio || 5}</span>
-                    {esp.telefono && (
-                      <>
-                        <span>•</span>
-                        <Phone className="w-4 h-4" />
-                        <span>{esp.telefono}</span>
-                      </>
-                    )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900 truncate">{esp.nombre} {esp.apellido}</h3>
+                    <button 
+                      onClick={() => toggleActivo(esp._id)}
+                      className="flex-shrink-0 ml-2"
+                    >
+                      {esp.activo ? (
+                        <ToggleRight className="w-8 h-8 text-emerald-500" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-gray-300" />
+                      )}
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {esp.especialidades?.slice(0, 3).map(e => (
-                      <span key={e} className="px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs">{e}</span>
-                    ))}
+                  <div className="flex items-center gap-1 mt-1">
+                    <Star className="w-4 h-4 text-amber-400 fill-current" />
+                    <span className="text-sm font-medium text-gray-700">{esp.calificacionPromedio || '5.0'}</span>
+                    <span className="text-gray-300 mx-1">•</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${esp.activo ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+                      {esp.activo ? 'Activo' : 'Inactivo'}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => toggleActivo(esp._id)}>
-                    {esp.activo ? (
-                      <ToggleRight className="w-8 h-8 text-green-500" />
-                    ) : (
-                      <ToggleLeft className="w-8 h-8 text-gray-400" />
-                    )}
-                  </button>
-                  <button onClick={() => abrirEditar(esp)} className="p-2 text-blue-500">
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button onClick={() => eliminarEspecialista(esp._id)} className="p-2 text-red-500">
-                    <Trash2 className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
+
+              {/* Contacto */}
+              <div className="mt-4 space-y-2">
+                {esp.telefono && (
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-gray-400" /> {esp.telefono}
+                  </p>
+                )}
+                {esp.email && (
+                  <p className="text-sm text-gray-500 flex items-center gap-2 truncate">
+                    <Mail className="w-4 h-4 text-gray-400" /> {esp.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Especialidades */}
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {esp.especialidades?.slice(0, 4).map(e => (
+                  <span key={e} className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">{e}</span>
+                ))}
+                {esp.especialidades?.length > 4 && (
+                  <span className="px-2.5 py-1 bg-gray-100 text-gray-400 rounded-lg text-xs">+{esp.especialidades.length - 4}</span>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="flex items-center justify-end gap-1 mt-4 pt-4 border-t border-gray-100">
+                <button 
+                  onClick={() => abrirEditar(esp)} 
+                  className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => eliminarEspecialista(esp._id)} 
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 my-8">
-            <h2 className="text-lg font-bold mb-4">
-              {modal === 'nuevo' ? 'Nuevo Especialista' : 'Editar Especialista'}
-            </h2>
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl my-8">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {modal === 'nuevo' ? 'Nuevo Especialista' : 'Editar Especialista'}
+              </h2>
+              <button 
+                onClick={() => setModal(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
+                  <input
+                    type="text"
+                    placeholder="Nombre"
+                    value={form.nombre}
+                    onChange={(e) => setForm({...form, nombre: e.target.value})}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Apellido</label>
+                  <input
+                    type="text"
+                    placeholder="Apellido"
+                    value={form.apellido}
+                    onChange={(e) => setForm({...form, apellido: e.target.value})}
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Teléfono</label>
                 <input
-                  type="text"
-                  placeholder="Nombre"
-                  value={form.nombre}
-                  onChange={(e) => setForm({...form, nombre: e.target.value})}
-                  className="w-full p-3 border rounded-xl"
-                />
-                <input
-                  type="text"
-                  placeholder="Apellido"
-                  value={form.apellido}
-                  onChange={(e) => setForm({...form, apellido: e.target.value})}
-                  className="w-full p-3 border rounded-xl"
+                  type="tel"
+                  placeholder="Teléfono"
+                  value={form.telefono}
+                  onChange={(e) => setForm({...form, telefono: e.target.value})}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
-              <input
-                type="tel"
-                placeholder="Teléfono"
-                value={form.telefono}
-                onChange={(e) => setForm({...form, telefono: e.target.value})}
-                className="w-full p-3 border rounded-xl"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={(e) => setForm({...form, email: e.target.value})}
-                className="w-full p-3 border rounded-xl"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={(e) => setForm({...form, email: e.target.value})}
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
               
               <div>
-                <label className="text-sm text-gray-600 mb-2 block">Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Color identificador</label>
                 <div className="flex gap-2">
                   {colores.map(c => (
                     <button
                       key={c}
                       onClick={() => setForm({...form, color: c})}
-                      className={`w-8 h-8 rounded-full ${form.color === c ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`}
+                      className={`w-9 h-9 rounded-xl transition-all ${form.color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : 'hover:scale-105'}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -210,16 +259,16 @@ const GestionEspecialistas = () => {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600 mb-2 block">Especialidades</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Especialidades</label>
                 <div className="flex flex-wrap gap-2">
-                  {especialidades.map(esp => (
+                  {especialidadesLista.map(esp => (
                     <button
                       key={esp}
                       onClick={() => toggleEspecialidad(esp)}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                         form.especialidades.includes(esp)
-                          ? 'bg-pink-500 text-white'
-                          : 'bg-gray-100 text-gray-700'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {esp}
@@ -228,13 +277,16 @@ const GestionEspecialistas = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setModal(null)} className="flex-1 py-3 border rounded-xl">
+            <div className="flex gap-3 p-5 border-t border-gray-100">
+              <button 
+                onClick={() => setModal(null)} 
+                className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
                 Cancelar
               </button>
               <button
                 onClick={guardarEspecialista}
-                className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl"
+                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
               >
                 Guardar
               </button>
@@ -242,7 +294,7 @@ const GestionEspecialistas = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

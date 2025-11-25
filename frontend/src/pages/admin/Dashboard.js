@@ -1,15 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Calendar, Users, Scissors, Clock, LogOut, Menu, X, DollarSign } from 'lucide-react';
+import { Calendar, Users, Clock, DollarSign, ChevronRight, TrendingUp, Link2, Copy, Check, Share2, ExternalLink } from 'lucide-react';
+import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { admin, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [citasHoy, setCitasHoy] = useState([]);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // URL de reservas para clientes
+  const reservasUrl = `${window.location.origin}/reservar`;
+
+  const copiarLink = async () => {
+    try {
+      await navigator.clipboard.writeText(reservasUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback para navegadores que no soportan clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = reservasUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const compartirWhatsApp = () => {
+    const mensaje = encodeURIComponent(`¡Reserva tu cita en Nail Spa! 💅\n\n${reservasUrl}`);
+    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
+  };
+
+  const compartirGeneral = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Nail Spa - Reserva tu cita',
+          text: '¡Reserva tu cita en Nail Spa! 💅',
+          url: reservasUrl,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      copiarLink();
+    }
+  };
 
   useEffect(() => {
     cargarDatos();
@@ -25,155 +66,208 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
+  const getEstadoStyle = (estado) => {
+    switch(estado) {
+      case 'confirmada': return 'bg-blue-50 text-blue-600';
+      case 'en_progreso': return 'bg-amber-50 text-amber-600';
+      case 'completada': return 'bg-emerald-50 text-emerald-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
   };
 
-  const menuItems = [
-    { label: 'Citas', icon: Calendar, path: '/admin/citas' },
-    { label: 'Servicios', icon: Scissors, path: '/admin/servicios' },
-    { label: 'Especialistas', icon: Users, path: '/admin/especialistas' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold">💅 Nail Spa</h1>
-            <p className="text-pink-100 text-sm">Hola, {admin?.nombre}</p>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 bg-white/20 rounded-lg">
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+    <AdminLayout title="Dashboard" subtitle="Resumen general del día">
+      <div className="space-y-6">
+        {/* Compartir Link de Reservas */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 shadow-sm text-white">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Link2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Comparte tu link de reservas</h3>
+                <p className="text-emerald-100 text-sm">Envía este enlace a tus clientes para que agenden sus citas</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Input con link */}
+              <div className="flex items-center bg-white/10 rounded-xl px-4 py-2 backdrop-blur-sm">
+                <span className="text-sm truncate max-w-[200px] lg:max-w-[300px]">{reservasUrl}</span>
+              </div>
+              {/* Botones */}
+              <div className="flex gap-2">
+                <button
+                  onClick={copiarLink}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                    copied 
+                      ? 'bg-white text-emerald-600' 
+                      : 'bg-white/20 hover:bg-white/30'
+                  }`}
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? 'Copiado' : 'Copiar'}
+                </button>
+                <button
+                  onClick={compartirWhatsApp}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all"
+                  title="Compartir por WhatsApp"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={compartirGeneral}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all"
+                  title="Compartir"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+                <a
+                  href={reservasUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-medium transition-all"
+                  title="Abrir página"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Menú móvil */}
-      {menuOpen && (
-        <div className="bg-white shadow-lg p-4 space-y-2">
-          {menuItems.map(item => (
-            <button
-              key={item.path}
-              onClick={() => { navigate(item.path); setMenuOpen(false); }}
-              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-pink-50"
+        {/* Main Stats Card */}
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-gray-500 text-sm">Resumen del día</p>
+              <h2 className="text-2xl font-bold text-gray-900 mt-1">Panel de Control</h2>
+            </div>
+            <button 
+              onClick={() => navigate('/admin/reportes')}
+              className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
             >
-              <item.icon className="w-5 h-5 text-pink-500" />
-              <span>{item.label}</span>
+              <TrendingUp className="w-4 h-4" />
+              Ver reportes
             </button>
-          ))}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 rounded-lg text-red-500 hover:bg-red-50"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Cerrar sesión</span>
-          </button>
-        </div>
-      )}
-
-      <div className="p-4 space-y-4">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.total || 0}</p>
-                <p className="text-gray-500 text-sm">Citas hoy</p>
-              </div>
-            </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">${stats?.ingresos || 0}</p>
-                <p className="text-gray-500 text-sm">Ingresos hoy</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.pendientes || 0}</p>
-                <p className="text-gray-500 text-sm">Pendientes</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-pink-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.completadas || 0}</p>
-                <p className="text-gray-500 text-sm">Completadas</p>
-              </div>
-            </div>
+          
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-gray-900">${stats?.ingresos || 0}</span>
+            <span className="text-gray-500 text-lg">.00</span>
+            <span className="text-emerald-500 text-sm font-medium ml-2">Ingresos hoy</span>
           </div>
         </div>
 
-        {/* Accesos rápidos */}
-        <div className="grid grid-cols-3 gap-3">
-          {menuItems.map(item => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="bg-white rounded-xl p-4 shadow text-center hover:shadow-lg transition-shadow"
-            >
-              <item.icon className="w-8 h-8 mx-auto text-pink-500 mb-2" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </button>
-          ))}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-blue-500" />
+              </div>
+              <span className="text-xs text-gray-400">Hoy</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+            <p className="text-gray-500 text-sm mt-1">Citas totales</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-500" />
+              </div>
+              <span className="text-xs text-gray-400">Pendiente</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{stats?.pendientes || 0}</p>
+            <p className="text-gray-500 text-sm mt-1">Por atender</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <Users className="w-5 h-5 text-emerald-500" />
+              </div>
+              <span className="text-xs text-gray-400">Completado</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{stats?.completadas || 0}</p>
+            <p className="text-gray-500 text-sm mt-1">Finalizadas</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+              </div>
+              <span className="text-xs text-gray-400">Promedio</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">
+              ${stats?.total > 0 ? Math.round((stats?.ingresos || 0) / stats.total) : 0}
+            </p>
+            <p className="text-gray-500 text-sm mt-1">Por cita</p>
+          </div>
         </div>
 
         {/* Citas de hoy */}
-        <div className="bg-white rounded-xl shadow">
-          <div className="p-4 border-b">
-            <h2 className="font-semibold">Citas de hoy</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <h2 className="font-semibold text-gray-900">Últimas citas</h2>
+              <p className="text-sm text-gray-500">Citas programadas para hoy</p>
+            </div>
+            <button 
+              onClick={() => navigate('/admin/citas')}
+              className="flex items-center gap-1 text-emerald-500 text-sm font-medium hover:text-emerald-600 transition-colors"
+            >
+              Ver todas
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-gray-50">
             {citasHoy.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No hay citas para hoy</div>
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500">No hay citas para hoy</p>
+                <button 
+                  onClick={() => navigate('/admin/citas')}
+                  className="mt-4 text-emerald-500 text-sm font-medium hover:text-emerald-600"
+                >
+                  Gestionar citas
+                </button>
+              </div>
             ) : (
-              citasHoy.slice(0, 5).map(cita => (
-                <div key={cita._id} className="p-4 flex items-center gap-4">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-pink-600">{cita.horaInicio}</p>
+              citasHoy.slice(0, 5).map((cita, index) => (
+                <div key={cita._id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
+                  <div className="text-center min-w-[60px]">
+                    <p className="text-lg font-semibold text-gray-900">{cita.horaInicio}</p>
+                    <p className="text-xs text-gray-400">hrs</p>
                   </div>
+                  <div className="w-px h-10 bg-gray-200"></div>
                   <div className="flex-1">
-                    <p className="font-medium">{cita.nombreCliente}</p>
+                    <p className="font-medium text-gray-900">{cita.nombreCliente}</p>
                     <p className="text-sm text-gray-500">
                       {cita.servicios?.map(s => s.nombreServicio).join(', ')}
                     </p>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    cita.estado === 'confirmada' ? 'bg-blue-100 text-blue-700' :
-                    cita.estado === 'en_progreso' ? 'bg-pink-100 text-pink-700' :
-                    cita.estado === 'completada' ? 'bg-green-100 text-green-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {cita.estado}
+                  <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getEstadoStyle(cita.estado)}`}>
+                    {cita.estado === 'confirmada' ? 'Confirmada' :
+                     cita.estado === 'en_progreso' ? 'En progreso' :
+                     cita.estado === 'completada' ? 'Completada' : cita.estado}
                   </span>
+                  <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </button>
                 </div>
               ))
             )}
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
