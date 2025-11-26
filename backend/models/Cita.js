@@ -9,7 +9,8 @@ const servicioEnCitaSchema = new mongoose.Schema({
 
 const citaSchema = new mongoose.Schema({
   // Cliente
-  clienteId: { type: String, required: true },
+  clienteId: { type: String },
+  cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
   nombreCliente: { type: String, required: true },
   telefono: { type: String, required: true },
   email: { type: String },

@@ -16,7 +16,9 @@ import {
   UserCircle,
   Cog,
   Image,
-  Star
+  Star,
+  CreditCard,
+  Clock
 } from 'lucide-react';
 
 const AdminLayout = ({ children, title, subtitle }) => {
@@ -28,6 +30,8 @@ const AdminLayout = ({ children, title, subtitle }) => {
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
     { label: 'Citas', icon: Calendar, path: '/admin/citas' },
+    { label: 'Horarios', icon: Clock, path: '/admin/horarios' },
+    { label: 'Pagos', icon: CreditCard, path: '/admin/pagos' },
     { label: 'Clientes', icon: UserCircle, path: '/admin/clientes' },
     { label: 'Servicios', icon: Scissors, path: '/admin/servicios' },
     { label: 'Especialistas', icon: Users, path: '/admin/especialistas' },

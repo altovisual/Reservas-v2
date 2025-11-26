@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# 💅 Nail Spa - Sistema de Reservas
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema de gestión de citas y reservas para Nail Spa.
 
-## Available Scripts
+## 🚀 Inicio Rápido
 
-In the project directory, you can run:
+### Requisitos Previos
+- **Node.js** v18 o superior
+- **MongoDB** corriendo en localhost:27017
 
-### `npm start`
+### 1. Configurar el Backend
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+cd backend
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# Instalar dependencias
+npm install
 
-### `npm test`
+# Crear archivo .env (copiar de .env.example)
+cp .env.example .env
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Inicializar datos de prueba (servicios, especialistas, estaciones)
+node scripts/seed.js
 
-### `npm run build`
+# Crear usuario administrador
+node scripts/initAdmin.js
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Iniciar servidor
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2. Configurar el Frontend
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd frontend
 
-### `npm run eject`
+# Instalar dependencias
+npm install
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Iniciar aplicación
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🔐 Credenciales de Acceso
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| Campo    | Valor               |
+|----------|---------------------|
+| Email    | `admin@nailspa.com` |
+| Password | `admin123`          |
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🌐 URLs de la Aplicación
 
-## Learn More
+| Servicio  | URL                         |
+|-----------|------------------------------|
+| Frontend  | http://localhost:3000        |
+| Backend   | http://localhost:5001        |
+| API Health| http://localhost:5001/api/health |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## ⚙️ Variables de Entorno (Backend)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Crear archivo `.env` en `/backend`:
 
-### Code Splitting
+```env
+PORT=5001
+MONGODB_URI=mongodb://localhost:27017/nailspa
+CORS_ORIGIN=http://localhost:3000
+JWT_SECRET=nailspa_secret_2024
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📁 Estructura del Proyecto
 
-### Analyzing the Bundle Size
+```
+nailspa/
+├── backend/
+│   ├── models/          # Modelos de MongoDB
+│   ├── routes/          # Rutas de la API
+│   ├── scripts/         # Scripts de inicialización
+│   │   ├── seed.js      # Datos de prueba
+│   │   └── initAdmin.js # Crear admin
+│   └── server.js        # Servidor Express
+├── frontend/
+│   └── src/             # Código React
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🛠️ Scripts Disponibles
 
-### Making a Progressive Web App
+### Backend
+- `npm start` - Inicia el servidor
+- `npm run dev` - Inicia con nodemon (desarrollo)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Frontend
+- `npm start` - Inicia en modo desarrollo
+- `npm run build` - Genera build de producción
+- `npm test` - Ejecuta tests

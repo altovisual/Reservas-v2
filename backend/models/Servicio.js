@@ -5,7 +5,8 @@ const servicioSchema = new mongoose.Schema({
   descripcion: { type: String, required: true },
   precio: { type: Number, required: true, min: 0 },
   duracion: { type: Number, required: true, min: 15 }, // minutos
-  imagenUrl: { type: String },
+  imagen: { type: String }, // URL de la imagen del servicio
+  imagenUrl: { type: String }, // Alias para compatibilidad
   categoria: {
     type: String,
     required: true,

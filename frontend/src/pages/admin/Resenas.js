@@ -124,29 +124,33 @@ const Resenas = () => {
 
   const aprobarResena = async (id) => {
     try {
-      await api.patch(`/resenas/${id}/aprobar`);
+      await api.patch(`/resenas/${id}/estado`, { estado: 'aprobada' });
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'aprobada' } : r));
     } catch (error) {
-      // Simular
+      console.error('Error al aprobar:', error);
+      // Actualizar localmente de todos modos
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'aprobada' } : r));
     }
-    setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'aprobada' } : r));
   };
 
   const rechazarResena = async (id) => {
     try {
-      await api.patch(`/resenas/${id}/rechazar`);
+      await api.patch(`/resenas/${id}/estado`, { estado: 'rechazada' });
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'rechazada' } : r));
     } catch (error) {
-      // Simular
+      console.error('Error al rechazar:', error);
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'rechazada' } : r));
     }
-    setResenas(prev => prev.map(r => r._id === id ? { ...r, estado: 'rechazada' } : r));
   };
 
   const responderResena = async (id, respuesta) => {
     try {
-      await api.post(`/resenas/${id}/responder`, { respuesta });
+      await api.patch(`/resenas/${id}/responder`, { respuesta });
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, respuesta } : r));
     } catch (error) {
-      // Simular
+      console.error('Error al responder:', error);
+      setResenas(prev => prev.map(r => r._id === id ? { ...r, respuesta } : r));
     }
-    setResenas(prev => prev.map(r => r._id === id ? { ...r, respuesta } : r));
   };
 
   const resenasFiltradas = filtro === 'todas' 
@@ -306,15 +310,15 @@ const ResenaCard = ({ resena, onAprobar, onRechazar, onResponder, renderEstrella
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
               <span className="text-emerald-600 font-bold text-lg">
-                {resena.cliente.charAt(0)}
+                {(resena.clienteNombre || resena.cliente?.nombre || (typeof resena.cliente === 'string' ? resena.cliente : 'C')).charAt(0)}
               </span>
             </div>
             <div>
-              <p className="font-medium text-gray-900">{resena.cliente}</p>
+              <p className="font-medium text-gray-900">{resena.clienteNombre || resena.cliente?.nombre || (typeof resena.cliente === 'string' ? resena.cliente : 'Cliente')}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 {renderEstrellas(resena.calificacion)}
                 <span className="text-sm text-gray-400">
-                  {new Date(resena.fecha).toLocaleDateString('es')}
+                  {new Date(resena.createdAt || resena.fecha).toLocaleDateString('es')}
                 </span>
               </div>
             </div>
@@ -332,10 +336,10 @@ const ResenaCard = ({ resena, onAprobar, onRechazar, onResponder, renderEstrella
         {/* Servicio y especialista */}
         <div className="flex items-center gap-4 mb-3 text-sm">
           <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg">
-            {resena.servicio}
+            {resena.servicioNombre || resena.servicio?.nombre || (typeof resena.servicio === 'string' ? resena.servicio : '')}
           </span>
           <span className="text-gray-500 flex items-center gap-1">
-            <User className="w-4 h-4" /> {resena.especialista}
+            <User className="w-4 h-4" /> {resena.especialista?.nombre || (typeof resena.especialista === 'string' ? resena.especialista : '')}
           </span>
         </div>
 

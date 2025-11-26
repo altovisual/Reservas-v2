@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Clock, DollarSign, ToggleLeft, ToggleRight, Scissors, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Edit, Trash2, Clock, DollarSign, ToggleLeft, ToggleRight, Scissors, X, Upload, Loader2 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const GestionServicios = () => {
   const [servicios, setServicios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
-  const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure' });
+  const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure', imagen: '' });
+  const [imagenPreview, setImagenPreview] = useState('');
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const fileInputRef = useRef(null);
 
   const categorias = ['Manicure', 'Pedicure', 'Uñas Acrílicas', 'Uñas en Gel', 'Nail Art', 'Depilación', 'Cejas y Pestañas', 'Paquetes'];
 
@@ -65,9 +70,49 @@ const GestionServicios = () => {
       descripcion: servicio.descripcion,
       precio: servicio.precio,
       duracion: servicio.duracion,
-      categoria: servicio.categoria
+      categoria: servicio.categoria,
+      imagen: servicio.imagen || ''
     });
+    setImagenPreview(servicio.imagen || '');
     setModal(servicio._id);
+  };
+
+  const abrirNuevo = () => {
+    setForm({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure', imagen: '' });
+    setImagenPreview('');
+    setModal('nuevo');
+  };
+
+  const subirImagen = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSubiendoImagen(true);
+    const formData = new FormData();
+    formData.append('imagen', file);
+
+    try {
+      const response = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const imageUrl = `${API_URL}${response.data.url}`;
+      setForm({ ...form, imagen: imageUrl });
+      setImagenPreview(imageUrl);
+    } catch (error) {
+      alert('Error al subir imagen');
+      console.error(error);
+    } finally {
+      setSubiendoImagen(false);
+    }
+  };
+
+  const eliminarImagen = () => {
+    setForm({ ...form, imagen: '' });
+    setImagenPreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   if (loading) {
@@ -88,7 +133,7 @@ const GestionServicios = () => {
           {servicios.length} servicios registrados
         </div>
         <button
-          onClick={() => { setForm({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure' }); setModal('nuevo'); }}
+          onClick={abrirNuevo}
           className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
         >
           <Plus className="w-5 h-5" /> Nuevo Servicio
@@ -99,12 +144,19 @@ const GestionServicios = () => {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {servicios.map(servicio => (
           <div key={servicio._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            {servicio.imagen && (
+              <div className="h-32 overflow-hidden">
+                <img src={servicio.imagen} alt={servicio.nombre} className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="p-5">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${servicio.disponible ? 'bg-emerald-50' : 'bg-gray-100'}`}>
-                    <Scissors className={`w-5 h-5 ${servicio.disponible ? 'text-emerald-500' : 'text-gray-400'}`} />
-                  </div>
+                  {!servicio.imagen && (
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${servicio.disponible ? 'bg-emerald-50' : 'bg-gray-100'}`}>
+                      <Scissors className={`w-5 h-5 ${servicio.disponible ? 'text-emerald-500' : 'text-gray-400'}`} />
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-semibold text-gray-900">{servicio.nombre}</h3>
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{servicio.categoria}</span>
@@ -224,6 +276,42 @@ const GestionServicios = () => {
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Imagen del servicio</label>
+                {imagenPreview ? (
+                  <div className="mb-3 relative">
+                    <img src={imagenPreview} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
+                    <button
+                      onClick={eliminarImagen}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors mb-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={subirImagen}
+                      className="hidden"
+                    />
+                    {subiendoImagen ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                        <span className="text-sm text-gray-500 mt-2">Subiendo...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Upload className="w-8 h-8 text-gray-400" />
+                        <span className="text-sm text-gray-500 mt-2">Clic para subir imagen</span>
+                        <span className="text-xs text-gray-400 mt-1">JPG, PNG, WebP (máx 5MB)</span>
+                      </div>
+                    )}
+                  </label>
+                )}
               </div>
             </div>
             <div className="flex gap-3 p-5 border-t border-gray-100">
