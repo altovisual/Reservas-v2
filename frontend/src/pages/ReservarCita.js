@@ -36,22 +36,55 @@ const ReservarCita = () => {
     transferencia: { banco: 'Banesco', cuenta: '0134-0000-00-0000000000', titular: 'Nail Spa C.A.', rif: 'J-12345678-9' }
   };
 
-  // Generar próximos 14 días
-  const generarDias = () => {
-    const dias = [];
-    const hoy = new Date();
-    for (let i = 0; i < 14; i++) {
-      const fecha = new Date(hoy);
-      fecha.setDate(hoy.getDate() + i);
-      dias.push(fecha);
+  // Estado para días disponibles
+  const [diasDisponibles, setDiasDisponibles] = useState([]);
+
+  // Cargar horarios configurados y generar días disponibles
+  const cargarHorariosYDias = async () => {
+    try {
+      const response = await api.get('/horarios');
+      const horarios = response.data;
+      
+      // Generar próximos 14 días con info de disponibilidad
+      const dias = [];
+      const hoy = new Date();
+      
+      for (let i = 0; i < 14; i++) {
+        const fecha = new Date(hoy);
+        fecha.setDate(hoy.getDate() + i);
+        const diaSemana = fecha.getDay();
+        const horarioDia = horarios.find(h => h.diaSemana === diaSemana);
+        
+        dias.push({
+          fecha,
+          disponible: horarioDia?.activo ?? false,
+          horario: horarioDia
+        });
+      }
+      
+      setDiasDisponibles(dias);
+    } catch (error) {
+      console.error('Error cargando horarios:', error);
+      // Fallback: todos los días disponibles excepto domingo
+      const dias = [];
+      const hoy = new Date();
+      for (let i = 0; i < 14; i++) {
+        const fecha = new Date(hoy);
+        fecha.setDate(hoy.getDate() + i);
+        dias.push({
+          fecha,
+          disponible: fecha.getDay() !== 0, // Domingo cerrado por defecto
+          horario: null
+        });
+      }
+      setDiasDisponibles(dias);
     }
-    return dias;
   };
-  const diasDisponibles = generarDias();
 
   useEffect(() => {
     cargarServicio();
     cargarDatosCliente();
+    cargarHorariosYDias();
     // eslint-disable-next-line
   }, [servicioId]);
 
@@ -318,7 +351,9 @@ const ReservarCita = () => {
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Selecciona fecha</h2>
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-              {diasDisponibles.map((dia, i) => {
+              {diasDisponibles.map((diaInfo, i) => {
+                const dia = diaInfo.fecha;
+                const disponible = diaInfo.disponible;
                 const esHoy = i === 0;
                 const nombreDia = dia.toLocaleDateString('es', { weekday: 'short' });
                 const numDia = dia.getDate();
@@ -328,21 +363,50 @@ const ReservarCita = () => {
                 return (
                   <button
                     key={i}
-                    onClick={() => { setFechaSeleccionada(dia); setHoraSeleccionada(null); setPaso(3); }}
+                    onClick={() => {
+                      if (disponible) {
+                        setFechaSeleccionada(dia);
+                        setHoraSeleccionada(null);
+                        setPaso(3);
+                      }
+                    }}
+                    disabled={!disponible}
                     className={`p-3 rounded-2xl text-center transition-all ${
-                      seleccionado 
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
-                        : 'bg-white shadow-sm border border-gray-100 hover:border-emerald-200 hover:shadow-md'
+                      !disponible
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-60'
+                        : seleccionado 
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                          : 'bg-white shadow-sm border border-gray-100 hover:border-emerald-200 hover:shadow-md'
                     }`}
                   >
-                    <div className={`text-xs uppercase ${seleccionado ? 'text-emerald-100' : 'text-gray-400'}`}>
+                    <div className={`text-xs uppercase ${
+                      !disponible ? 'text-gray-300' :
+                      seleccionado ? 'text-emerald-100' : 'text-gray-400'
+                    }`}>
                       {esHoy ? 'Hoy' : nombreDia}
                     </div>
-                    <div className="text-xl font-bold mt-1">{numDia}</div>
-                    <div className={`text-xs ${seleccionado ? 'text-emerald-100' : 'text-gray-400'}`}>{mes}</div>
+                    <div className={`text-xl font-bold mt-1 ${!disponible ? 'text-gray-300' : ''}`}>{numDia}</div>
+                    <div className={`text-xs ${
+                      !disponible ? 'text-red-400' :
+                      seleccionado ? 'text-emerald-100' : 'text-gray-400'
+                    }`}>
+                      {!disponible ? 'Cerrado' : mes}
+                    </div>
                   </button>
                 );
               })}
+            </div>
+            
+            {/* Leyenda */}
+            <div className="flex items-center justify-center gap-4 mt-4 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span className="text-gray-500">Disponible</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+                <span className="text-gray-500">Cerrado</span>
+              </div>
             </div>
           </div>
         )}

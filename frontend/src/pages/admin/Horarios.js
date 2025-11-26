@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, Save, ChevronLeft, ChevronRight, Users, AlertCircle, Check, X, Settings } from 'lucide-react';
 import api from '../../services/api';
+import AdminLayout from '../../components/AdminLayout';
 
 const Horarios = () => {
   const [horarios, setHorarios] = useState([]);
@@ -110,19 +111,17 @@ const Horarios = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
-      </div>
+      <AdminLayout title="Gestión de Horarios" subtitle="Configura los días y horarios disponibles para citas">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gestión de Horarios</h1>
-        <p className="text-gray-500">Configura los días y horarios disponibles para citas</p>
-      </div>
+    <AdminLayout title="Gestión de Horarios" subtitle="Configura los días y horarios disponibles para citas">
+      <div>
 
       {/* Mensaje */}
       {mensaje && (
@@ -424,7 +423,8 @@ const Horarios = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
