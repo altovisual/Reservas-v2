@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Calendar, Save, ChevronLeft, ChevronRight, Users, AlertCircle, Check, X, Settings } from 'lucide-react';
 import api from '../../services/api';
 import AdminLayout from '../../components/AdminLayout';
+
+const DIAS_SEMANA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 const Horarios = () => {
   const [horarios, setHorarios] = useState([]);
@@ -12,31 +14,50 @@ const Horarios = () => {
   const [resumenMes, setResumenMes] = useState([]);
   const [cuposDelDia, setCuposDelDia] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
-  const [tab, setTab] = useState('configuracion'); // 'configuracion' o 'calendario'
+  const [tab, setTab] = useState('configuracion');
+  const [cargandoCupos, setCargandoCupos] = useState(false);
 
-  useEffect(() => {
-    cargarHorarios();
-  }, []);
-
-  useEffect(() => {
-    if (tab === 'calendario') {
-      cargarResumenMes();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mesActual, tab]);
-
-  const cargarHorarios = async () => {
+  const cargarHorarios = useCallback(async () => {
     try {
       const response = await api.get('/horarios');
-      setHorarios(response.data);
+      // Si no hay horarios, crear los por defecto
+      if (response.data.length === 0) {
+        const horariosDefault = DIAS_SEMANA.map((nombre, i) => ({
+          diaSemana: i,
+          nombreDia: nombre,
+          activo: i !== 0, // Domingo cerrado
+          horaApertura: '09:00',
+          horaCierre: '18:00',
+          inicioAlmuerzo: '12:00',
+          finAlmuerzo: '13:00',
+          intervalo: 30,
+          cuposPorHora: 3
+        }));
+        setHorarios(horariosDefault);
+      } else {
+        setHorarios(response.data);
+      }
     } catch (error) {
       console.error('Error:', error);
+      // Crear horarios por defecto si hay error
+      const horariosDefault = DIAS_SEMANA.map((nombre, i) => ({
+        diaSemana: i,
+        nombreDia: nombre,
+        activo: i !== 0,
+        horaApertura: '09:00',
+        horaCierre: '18:00',
+        inicioAlmuerzo: '12:00',
+        finAlmuerzo: '13:00',
+        intervalo: 30,
+        cuposPorHora: 3
+      }));
+      setHorarios(horariosDefault);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const cargarResumenMes = async () => {
+  const cargarResumenMes = useCallback(async () => {
     try {
       const mes = mesActual.getMonth() + 1;
       const anio = mesActual.getFullYear();
@@ -44,16 +65,31 @@ const Horarios = () => {
       setResumenMes(response.data);
     } catch (error) {
       console.error('Error:', error);
+      setResumenMes([]);
     }
-  };
+  }, [mesActual]);
+
+  useEffect(() => {
+    cargarHorarios();
+  }, [cargarHorarios]);
+
+  useEffect(() => {
+    if (tab === 'calendario') {
+      cargarResumenMes();
+    }
+  }, [mesActual, tab, cargarResumenMes]);
 
   const cargarCuposDelDia = async (fecha) => {
     try {
+      setCargandoCupos(true);
       setFechaSeleccionada(fecha);
       const response = await api.get(`/horarios/cupos/${fecha}`);
       setCuposDelDia(response.data);
     } catch (error) {
       console.error('Error:', error);
+      setCuposDelDia({ disponible: false, mensaje: 'Error al cargar cupos' });
+    } finally {
+      setCargandoCupos(false);
     }
   };
 
@@ -69,10 +105,11 @@ const Horarios = () => {
       for (const horario of horarios) {
         await api.put(`/horarios/${horario.diaSemana}`, horario);
       }
-      setMensaje({ tipo: 'exito', texto: 'Horarios guardados correctamente' });
-      setTimeout(() => setMensaje(null), 3000);
+      setMensaje({ tipo: 'exito', texto: '¡Horarios guardados correctamente! Los cambios ya están activos.' });
+      setTimeout(() => setMensaje(null), 4000);
     } catch (error) {
-      setMensaje({ tipo: 'error', texto: 'Error al guardar horarios' });
+      setMensaje({ tipo: 'error', texto: 'Error al guardar horarios. Intenta de nuevo.' });
+      setTimeout(() => setMensaje(null), 4000);
     } finally {
       setGuardando(false);
     }
@@ -84,6 +121,8 @@ const Horarios = () => {
       nuevo.setMonth(nuevo.getMonth() + direccion);
       return nuevo;
     });
+    setCuposDelDia(null);
+    setFechaSeleccionada(null);
   };
 
   const generarCalendario = () => {
@@ -94,16 +133,16 @@ const Horarios = () => {
     
     const dias = [];
     
-    // Días vacíos al inicio
     for (let i = 0; i < primerDiaSemana; i++) {
       dias.push(null);
     }
     
-    // Días del mes
     for (let i = 1; i <= diasEnMes; i++) {
       const fechaStr = `${mesActual.getFullYear()}-${String(mesActual.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const info = resumenMes.find(r => r.fecha === fechaStr);
-      dias.push({ dia: i, fecha: fechaStr, info });
+      const fechaObj = new Date(mesActual.getFullYear(), mesActual.getMonth(), i);
+      const esPasado = fechaObj < new Date().setHours(0,0,0,0);
+      dias.push({ dia: i, fecha: fechaStr, info, esPasado });
     }
     
     return dias;
@@ -111,7 +150,7 @@ const Horarios = () => {
 
   if (loading) {
     return (
-      <AdminLayout title="Gestión de Horarios" subtitle="Configura los días y horarios disponibles para citas">
+      <AdminLayout title="Gestión de Agenda" subtitle="Configura los días y horarios disponibles para citas">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
         </div>
@@ -161,21 +200,31 @@ const Horarios = () => {
 
       {tab === 'configuracion' ? (
         /* Configuración de horarios semanales */
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-emerald-500" />
-              Horarios por Día
-            </h2>
-            <button
-              onClick={guardarHorarios}
-              disabled={guardando}
-              className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {guardando ? 'Guardando...' : 'Guardar Cambios'}
-            </button>
+        <div className="space-y-4">
+          {/* Info box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-700">
+              <p className="font-medium">¿Cómo funciona?</p>
+              <p className="mt-1">Configura los días y horarios en que tu negocio está abierto. Los clientes solo podrán reservar citas en los días y horas que actives aquí. Los <strong>cupos por hora</strong> indican cuántas citas simultáneas puedes atender.</p>
+            </div>
           </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-emerald-500" />
+                Horarios por Día
+              </h2>
+              <button
+                onClick={guardarHorarios}
+                disabled={guardando}
+                className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {guardando ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
 
           <div className="divide-y divide-gray-100">
             {horarios.map((horario) => (
@@ -274,6 +323,7 @@ const Horarios = () => {
               </div>
             ))}
           </div>
+          </div>
         </div>
       ) : (
         /* Calendario de disponibilidad */
@@ -371,7 +421,11 @@ const Horarios = () => {
               Cupos del Día
             </h3>
 
-            {!cuposDelDia ? (
+            {cargandoCupos ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full"></div>
+              </div>
+            ) : !cuposDelDia ? (
               <div className="text-center text-gray-400 py-8">
                 <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>Selecciona un día para ver los cupos</p>
