@@ -102,12 +102,14 @@ const Horarios = () => {
   const guardarHorarios = async () => {
     setGuardando(true);
     try {
-      for (const horario of horarios) {
-        await api.put(`/horarios/${horario.diaSemana}`, horario);
-      }
+      // Usar endpoint bulk para guardar todos de una vez
+      await api.post('/horarios/bulk', { horarios });
       setMensaje({ tipo: 'exito', texto: '¡Horarios guardados correctamente! Los cambios ya están activos.' });
       setTimeout(() => setMensaje(null), 4000);
+      // Recargar para confirmar
+      cargarHorarios();
     } catch (error) {
+      console.error('Error guardando:', error);
       setMensaje({ tipo: 'error', texto: 'Error al guardar horarios. Intenta de nuevo.' });
       setTimeout(() => setMensaje(null), 4000);
     } finally {

@@ -41,13 +41,57 @@ router.get('/', async (req, res) => {
 // PUT - Actualizar horario de un día
 router.put('/:diaSemana', async (req, res) => {
   try {
-    const { diaSemana } = req.params;
+    const diaSemana = parseInt(req.params.diaSemana);
+    
+    // Validar que sea un día válido
+    if (isNaN(diaSemana) || diaSemana < 0 || diaSemana > 6) {
+      return res.status(400).json({ mensaje: 'Día de semana inválido' });
+    }
+    
+    const datosHorario = {
+      diaSemana,
+      nombreDia: DIAS_SEMANA[diaSemana],
+      activo: req.body.activo ?? true,
+      horaApertura: req.body.horaApertura || '09:00',
+      horaCierre: req.body.horaCierre || '18:00',
+      inicioAlmuerzo: req.body.inicioAlmuerzo || '12:00',
+      finAlmuerzo: req.body.finAlmuerzo || '13:00',
+      intervalo: req.body.intervalo || 30,
+      cuposPorHora: req.body.cuposPorHora || 3
+    };
+    
     const horario = await Horario.findOneAndUpdate(
-      { diaSemana: parseInt(diaSemana) },
-      { ...req.body, nombreDia: DIAS_SEMANA[parseInt(diaSemana)] },
-      { new: true, upsert: true }
+      { diaSemana },
+      datosHorario,
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+    
     res.json(horario);
+  } catch (error) {
+    console.error('Error guardando horario:', error);
+    res.status(500).json({ mensaje: error.message });
+  }
+});
+
+// POST - Crear/actualizar todos los horarios de una vez
+router.post('/bulk', async (req, res) => {
+  try {
+    const { horarios } = req.body;
+    
+    const resultados = [];
+    for (const h of horarios) {
+      const horario = await Horario.findOneAndUpdate(
+        { diaSemana: h.diaSemana },
+        {
+          ...h,
+          nombreDia: DIAS_SEMANA[h.diaSemana]
+        },
+        { new: true, upsert: true }
+      );
+      resultados.push(horario);
+    }
+    
+    res.json(resultados);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
   }
@@ -56,15 +100,44 @@ router.put('/:diaSemana', async (req, res) => {
 // GET - Obtener cupos disponibles para una fecha
 router.get('/cupos/:fecha', async (req, res) => {
   try {
-    const fecha = new Date(req.params.fecha);
-    fecha.setHours(0, 0, 0, 0);
+    const fechaParam = req.params.fecha;
+    const fecha = new Date(fechaParam + 'T00:00:00');
+    
+    if (isNaN(fecha.getTime())) {
+      return res.status(400).json({ 
+        disponible: false, 
+        mensaje: 'Fecha inválida',
+        cupos: [] 
+      });
+    }
     
     const diaSemana = fecha.getDay();
     
     // Obtener configuración del día
-    const horario = await Horario.findOne({ diaSemana });
+    let horario = await Horario.findOne({ diaSemana });
     
-    if (!horario || !horario.activo) {
+    // Si no existe el horario, crear uno por defecto
+    if (!horario) {
+      // Crear horarios por defecto si no existen
+      const horariosDefault = [];
+      for (let i = 0; i < 7; i++) {
+        horariosDefault.push({
+          diaSemana: i,
+          nombreDia: DIAS_SEMANA[i],
+          activo: i !== 0,
+          horaApertura: '09:00',
+          horaCierre: '18:00',
+          inicioAlmuerzo: '12:00',
+          finAlmuerzo: '13:00',
+          intervalo: 30,
+          cuposPorHora: 3
+        });
+      }
+      await Horario.insertMany(horariosDefault);
+      horario = horariosDefault[diaSemana];
+    }
+    
+    if (!horario.activo) {
       return res.json({ 
         disponible: false, 
         mensaje: 'Este día no está disponible para citas',

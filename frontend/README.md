@@ -8,15 +8,32 @@ Sistema de gestión de citas y reservas para Nail Spa.
 - **Node.js** v18 o superior
 - **MongoDB** corriendo en localhost:27017
 
-### 1. Configurar el Backend
+---
+
+## 📦 Instalación Inicial (Solo la primera vez)
+
+### 1. Clonar e instalar dependencias
+
+```bash
+# Clonar el repositorio
+git clone <url-del-repositorio>
+cd nailspa
+
+# Instalar dependencias del Backend
+cd backend
+npm install
+
+# Instalar dependencias del Frontend
+cd ../frontend
+npm install
+```
+
+### 2. Configurar el Backend
 
 ```bash
 cd backend
 
-# Instalar dependencias
-npm install
-
-# Crear archivo .env (copiar de .env.example)
+# Crear archivo .env
 cp .env.example .env
 
 # Inicializar datos de prueba (servicios, especialistas, estaciones)
@@ -24,22 +41,61 @@ node scripts/seed.js
 
 # Crear usuario administrador
 node scripts/initAdmin.js
-
-# Iniciar servidor
-npm start
 ```
 
-### 2. Configurar el Frontend
+---
 
+## ▶️ Iniciar la Aplicación
+
+### Opción 1: Iniciar en terminales separadas
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm start
+```
+> El servidor se iniciará en http://localhost:5001
+
+**Terminal 2 - Frontend:**
 ```bash
 cd frontend
-
-# Instalar dependencias
-npm install
-
-# Iniciar aplicación
 npm start
 ```
+> La aplicación se abrirá en http://localhost:3000
+
+### Opción 2: Comandos rápidos (Windows PowerShell)
+
+**Iniciar Backend:**
+```powershell
+cd C:\ruta\a\nailspa\backend; node server.js
+```
+
+**Iniciar Frontend:**
+```powershell
+cd C:\ruta\a\nailspa\frontend; npm start
+```
+
+### Opción 3: Iniciar ambos con un solo comando
+
+Desde la carpeta raíz del proyecto:
+```bash
+# Instalar concurrently (solo una vez)
+npm install -g concurrently
+
+# Iniciar ambos
+concurrently "cd backend && npm start" "cd frontend && npm start"
+```
+
+---
+
+## 🔄 Reiniciar el Backend (si el puerto está ocupado)
+
+```powershell
+# Matar procesos de Node.js y reiniciar
+taskkill /F /IM node.exe; cd backend; node server.js
+```
+
+---
 
 ## 🔐 Credenciales de Acceso
 
@@ -65,7 +121,27 @@ PORT=5001
 MONGODB_URI=mongodb://localhost:27017/nailspa
 CORS_ORIGIN=http://localhost:3000
 JWT_SECRET=nailspa_secret_2024
+
+# Cloudinary (para almacenar imágenes)
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret
 ```
+
+## ☁️ Configurar Cloudinary (Almacenamiento de Imágenes)
+
+1. Crear cuenta gratuita en [Cloudinary](https://cloudinary.com/users/register_free)
+2. Ir al [Dashboard](https://cloudinary.com/console)
+3. Copiar las credenciales:
+   - **Cloud Name**
+   - **API Key**
+   - **API Secret**
+4. Agregar al archivo `.env` del backend
+
+Las imágenes se organizan automáticamente en carpetas:
+- `nailspa/galeria` - Fotos de trabajos
+- `nailspa/servicios` - Imágenes de servicios
+- `nailspa/especialistas` - Fotos de perfil
 
 ## 📁 Estructura del Proyecto
 

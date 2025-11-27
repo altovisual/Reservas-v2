@@ -3,7 +3,7 @@ import { Plus, Edit, Trash2, Clock, DollarSign, ToggleLeft, ToggleRight, Scissor
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+// API_URL ya no es necesario, Cloudinary devuelve URLs completas
 
 const GestionServicios = () => {
   const [servicios, setServicios] = useState([]);
@@ -13,6 +13,7 @@ const GestionServicios = () => {
   const [imagenPreview, setImagenPreview] = useState('');
   const [subiendoImagen, setSubiendoImagen] = useState(false);
   const fileInputRef = useRef(null);
+  const imagenUrlRef = useRef(''); // Referencia para guardar la URL de la imagen
 
   const categorias = ['Manicure', 'Pedicure', 'Uñas Acrílicas', 'Uñas en Gel', 'Nail Art', 'Depilación', 'Cejas y Pestañas', 'Paquetes'];
 
@@ -32,16 +33,45 @@ const GestionServicios = () => {
   };
 
   const guardarServicio = async () => {
+    // Esperar si hay una imagen subiéndose
+    if (subiendoImagen) {
+      alert('Espera a que termine de subir la imagen');
+      return;
+    }
+    
     try {
+      // Usar múltiples fuentes para la imagen: form, ref, o preview (si es URL de Cloudinary)
+      let imagenFinal = form.imagen || imagenUrlRef.current || '';
+      
+      // Si imagenPreview es una URL de Cloudinary, usarla
+      if (!imagenFinal && imagenPreview && imagenPreview.includes('cloudinary')) {
+        imagenFinal = imagenPreview;
+      }
+      
+      const dataToSave = {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+        precio: parseFloat(form.precio) || 0,
+        duracion: parseInt(form.duracion) || 30,
+        categoria: form.categoria,
+        imagen: imagenFinal
+      };
+      
+      console.log('Guardando servicio:', dataToSave);
+      console.log('Imagen a guardar:', imagenFinal);
+      
       if (modal === 'nuevo') {
-        await api.post('/servicios', form);
+        await api.post('/servicios', dataToSave);
       } else {
-        await api.put(`/servicios/${modal}`, form);
+        await api.put(`/servicios/${modal}`, dataToSave);
       }
       setModal(null);
-      cargarServicios();
+      setForm({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure', imagen: '' });
+      setImagenPreview('');
+      await cargarServicios();
     } catch (error) {
-      alert('Error al guardar');
+      console.error('Error al guardar:', error);
+      alert('Error al guardar: ' + (error.response?.data?.mensaje || error.message));
     }
   };
 
@@ -65,21 +95,24 @@ const GestionServicios = () => {
   };
 
   const abrirEditar = (servicio) => {
+    const imagenActual = servicio.imagen || '';
     setForm({
       nombre: servicio.nombre,
       descripcion: servicio.descripcion,
       precio: servicio.precio,
       duracion: servicio.duracion,
       categoria: servicio.categoria,
-      imagen: servicio.imagen || ''
+      imagen: imagenActual
     });
-    setImagenPreview(servicio.imagen || '');
+    setImagenPreview(imagenActual);
+    imagenUrlRef.current = imagenActual;
     setModal(servicio._id);
   };
 
   const abrirNuevo = () => {
     setForm({ nombre: '', descripcion: '', precio: '', duracion: '', categoria: 'Manicure', imagen: '' });
     setImagenPreview('');
+    imagenUrlRef.current = '';
     setModal('nuevo');
   };
 
@@ -87,21 +120,36 @@ const GestionServicios = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Mostrar preview local inmediatamente
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagenPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
     setSubiendoImagen(true);
     const formData = new FormData();
     formData.append('imagen', file);
 
     try {
-      const response = await api.post('/upload', formData, {
+      // Subir a Cloudinary
+      const response = await api.post('/servicios/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      const imageUrl = `${API_URL}${response.data.url}`;
-      setForm({ ...form, imagen: imageUrl });
+      // Cloudinary devuelve la URL completa
+      const imageUrl = response.data.url;
+      console.log('✅ Imagen subida a Cloudinary:', imageUrl);
+      
+      // Guardar en ref Y en state
+      imagenUrlRef.current = imageUrl;
+      setForm(prevForm => ({ ...prevForm, imagen: imageUrl }));
       setImagenPreview(imageUrl);
     } catch (error) {
       alert('Error al subir imagen');
       console.error(error);
+      setImagenPreview('');
+      imagenUrlRef.current = '';
     } finally {
       setSubiendoImagen(false);
     }
@@ -110,6 +158,7 @@ const GestionServicios = () => {
   const eliminarImagen = () => {
     setForm({ ...form, imagen: '' });
     setImagenPreview('');
+    imagenUrlRef.current = '';
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -323,9 +372,14 @@ const GestionServicios = () => {
               </button>
               <button
                 onClick={guardarServicio}
-                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+                disabled={subiendoImagen}
+                className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                  subiendoImagen 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                }`}
               >
-                Guardar
+                {subiendoImagen ? 'Subiendo imagen...' : 'Guardar'}
               </button>
             </div>
           </div>

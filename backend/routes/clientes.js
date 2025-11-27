@@ -21,8 +21,10 @@ router.post('/buscar', async (req, res) => {
     }
     
     // Obtener historial de citas
-    const citas = await Cita.find({ cliente: cliente._id })
-      .populate('especialista', 'nombre apellido')
+    const citas = await Cita.find({ 
+      $or: [{ cliente: cliente._id }, { clienteId: cliente._id.toString() }]
+    })
+      .populate('especialistaId', 'nombre apellido')
       .sort({ fechaCita: -1 })
       .limit(10);
     
@@ -108,18 +110,22 @@ router.get('/', async (req, res) => {
 // Obtener cliente por ID
 router.get('/:id', async (req, res) => {
   try {
-    const cliente = await Cliente.findById(req.params.id)
-      .populate('preferencias.especialistaFavorito', 'nombre apellido')
-      .populate('preferencias.serviciosFavoritos', 'nombre precio');
+    // Validar ID
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ mensaje: 'ID inválido' });
+    }
+    
+    const cliente = await Cliente.findById(req.params.id);
     
     if (!cliente) {
       return res.status(404).json({ mensaje: 'Cliente no encontrado' });
     }
     
     // Obtener historial completo
-    const citas = await Cita.find({ cliente: cliente._id })
-      .populate('especialista', 'nombre apellido')
-      .populate('servicios.servicio', 'nombre precio')
+    const citas = await Cita.find({ 
+      $or: [{ cliente: cliente._id }, { clienteId: cliente._id.toString() }]
+    })
+      .populate('especialistaId', 'nombre apellido')
       .sort({ fechaCita: -1 });
     
     res.json({
@@ -127,6 +133,7 @@ router.get('/:id', async (req, res) => {
       historialCitas: citas
     });
   } catch (error) {
+    console.error('Error obteniendo cliente:', error);
     res.status(500).json({ mensaje: error.message });
   }
 });
@@ -206,16 +213,27 @@ router.post('/:id/canjear-puntos', async (req, res) => {
 // Obtener favoritos del cliente
 router.get('/:id/favoritos', async (req, res) => {
   try {
-    const cliente = await Cliente.findById(req.params.id)
-      .populate('preferencias.serviciosFavoritos', 'nombre precio duracion imagen categoria');
-    
-    if (!cliente) {
-      return res.status(404).json({ mensaje: 'Cliente no encontrado' });
+    // Validar que el ID sea válido
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.json([]);
     }
     
-    res.json(cliente.preferencias?.serviciosFavoritos || []);
+    const cliente = await Cliente.findById(req.params.id);
+    
+    if (!cliente) {
+      return res.json([]);
+    }
+    
+    // Si tiene favoritos, hacer populate
+    if (cliente.preferencias?.serviciosFavoritos?.length > 0) {
+      await cliente.populate('preferencias.serviciosFavoritos', 'nombre precio duracion imagen categoria');
+      return res.json(cliente.preferencias.serviciosFavoritos || []);
+    }
+    
+    res.json([]);
   } catch (error) {
-    res.status(500).json({ mensaje: error.message });
+    console.error('Error obteniendo favoritos:', error);
+    res.json([]);
   }
 });
 

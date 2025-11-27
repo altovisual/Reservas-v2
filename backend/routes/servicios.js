@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Servicio = require('../models/Servicio');
 const { protegerRuta } = require('../middleware/auth');
+const { uploadServicio, eliminarImagen, getPublicIdFromUrl } = require('../config/cloudinary');
 
 // GET - Todos los servicios
 router.get('/', async (req, res) => {
@@ -41,6 +42,24 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST - Subir imagen de servicio a Cloudinary
+router.post('/upload', protegerRuta, uploadServicio.single('imagen'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ mensaje: 'No se proporcionó ninguna imagen' });
+    }
+    
+    res.json({
+      success: true,
+      url: req.file.path,
+      public_id: req.file.filename
+    });
+  } catch (error) {
+    console.error('Error subiendo imagen:', error);
+    res.status(500).json({ mensaje: 'Error al subir imagen', error: error.message });
+  }
+});
+
 // POST - Crear servicio (protegido)
 router.post('/', protegerRuta, async (req, res) => {
   try {
@@ -54,10 +73,22 @@ router.post('/', protegerRuta, async (req, res) => {
 // PUT - Actualizar servicio (protegido)
 router.put('/:id', protegerRuta, async (req, res) => {
   try {
-    const servicio = await Servicio.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    console.log('📝 Actualizando servicio:', req.params.id);
+    console.log('📝 Datos recibidos:', req.body);
+    console.log('📝 Imagen recibida:', req.body.imagen);
+    
+    const servicio = await Servicio.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true, runValidators: true }
+    );
+    
     if (!servicio) return res.status(404).json({ mensaje: 'No encontrado' });
+    
+    console.log('✅ Servicio actualizado:', servicio.nombre, '- Imagen:', servicio.imagen);
     res.json(servicio);
   } catch (error) {
+    console.error('❌ Error actualizando:', error);
     res.status(400).json({ mensaje: 'Error', error: error.message });
   }
 });

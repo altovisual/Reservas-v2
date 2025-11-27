@@ -133,29 +133,51 @@ const ReservarCita = () => {
     try {
       const fechaStr = fechaSeleccionada.toISOString().split('T')[0];
       
-      // Primero verificar cupos disponibles del día
-      const cuposResponse = await api.get(`/horarios/cupos/${fechaStr}`);
-      
-      if (!cuposResponse.data.disponible) {
-        setHorasDisponibles([]);
-        return;
+      // Obtener cupos disponibles del día
+      let horasConCupos = [];
+      try {
+        const cuposResponse = await api.get(`/horarios/cupos/${fechaStr}`);
+        
+        if (cuposResponse.data.disponible && cuposResponse.data.cupos) {
+          horasConCupos = cuposResponse.data.cupos
+            .filter(c => c.estado === 'disponible' && c.disponibles > 0)
+            .map(c => ({ hora: c.hora, disponibles: c.disponibles }));
+        }
+      } catch (err) {
+        console.log('No hay configuración de horarios, usando horarios del especialista');
       }
       
-      // Filtrar solo las horas con cupos disponibles
-      const horasConCupos = cuposResponse.data.cupos
-        .filter(c => c.estado === 'disponible' && c.disponibles > 0)
-        .map(c => c.hora);
-      
-      // También verificar disponibilidad del especialista
-      const response = await api.get(`/especialistas/${especialistaSeleccionado._id}/disponibilidad`, {
-        params: { fecha: fechaStr, duracion: servicio.duracion }
-      });
-      
-      // Combinar: solo mostrar horas que estén disponibles en ambos
-      const horasEspecialista = response.data.horasDisponibles || [];
-      const horasFinales = horasEspecialista.filter(h => horasConCupos.includes(h));
-      
-      setHorasDisponibles(horasFinales);
+      // Obtener disponibilidad del especialista
+      try {
+        const response = await api.get(`/especialistas/${especialistaSeleccionado._id}/disponibilidad`, {
+          params: { fecha: fechaStr, duracion: servicio?.duracion || 30 }
+        });
+        
+        const horasEspecialistaRaw = response.data.horasDisponibles || [];
+        // Normalizar: puede ser array de strings o array de objetos {hora, horaFin}
+        const horasEspecialista = horasEspecialistaRaw.map(h => 
+          typeof h === 'string' ? h : (h.hora || h)
+        );
+        
+        // Si hay cupos configurados, combinar ambos
+        if (horasConCupos.length > 0) {
+          const horasCuposStr = horasConCupos.map(h => h.hora);
+          const horasFinales = horasEspecialista
+            .filter(h => horasCuposStr.includes(h))
+            .map(h => ({ hora: h, disponibles: horasConCupos.find(c => c.hora === h)?.disponibles || 1 }));
+          setHorasDisponibles(horasFinales);
+        } else {
+          // Si no hay cupos configurados, usar solo las del especialista
+          setHorasDisponibles(horasEspecialista.map(h => ({ hora: h, disponibles: 1 })));
+        }
+      } catch (err) {
+        // Si falla el especialista, usar solo los cupos
+        if (horasConCupos.length > 0) {
+          setHorasDisponibles(horasConCupos);
+        } else {
+          setHorasDisponibles([]);
+        }
+      }
     } catch (error) {
       console.error('Error:', error);
       setHorasDisponibles([]);

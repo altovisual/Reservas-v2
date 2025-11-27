@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Users, Clock, DollarSign, ChevronRight, TrendingUp, Link2, Copy, Check, Share2, ExternalLink } from 'lucide-react';
+import { Calendar, Users, Clock, DollarSign, ChevronRight, TrendingUp, Link2, Copy, Check, Share2, ExternalLink, RefreshCw, X, User, Phone, Scissors, CreditCard } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
+import { useNotifications } from '../../context/NotificationContext';
 import api from '../../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { notifications, isConnected } = useNotifications();
   const [stats, setStats] = useState(null);
   const [citasHoy, setCitasHoy] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   // URL de reservas para clientes
   const reservasUrl = `${window.location.origin}/reservar`;
@@ -56,13 +60,30 @@ const Dashboard = () => {
     cargarDatos();
   }, []);
 
+  // Recargar datos cuando llegue una nueva notificación
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const ultimaNotificacion = notifications[0];
+      // Si la notificación es reciente (últimos 5 segundos), recargar
+      const tiempoNotificacion = new Date(ultimaNotificacion.timestamp).getTime();
+      const ahora = Date.now();
+      if (ahora - tiempoNotificacion < 5000) {
+        console.log('🔄 Recargando dashboard por nueva notificación');
+        cargarDatos();
+      }
+    }
+  }, [notifications]);
+
   const cargarDatos = async () => {
+    setLoading(true);
     try {
       const response = await api.get('/citas/hoy');
       setCitasHoy(response.data.citas || []);
       setStats(response.data.stats);
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,6 +99,24 @@ const Dashboard = () => {
   return (
     <AdminLayout title="Dashboard" subtitle="Resumen general del día">
       <div className="space-y-6">
+        {/* Indicador de conexión en tiempo real */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-gray-500">
+              {isConnected ? 'Conectado en tiempo real' : 'Desconectado - reconectando...'}
+            </span>
+          </div>
+          <button 
+            onClick={cargarDatos}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
+        </div>
+
         {/* Compartir Link de Reservas */}
         <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 shadow-sm text-white">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -241,7 +280,11 @@ const Dashboard = () => {
               </div>
             ) : (
               citasHoy.slice(0, 5).map((cita, index) => (
-                <div key={cita._id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
+                <div 
+                  key={cita._id} 
+                  className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => setCitaSeleccionada(cita)}
+                >
                   <div className="text-center min-w-[60px]">
                     <p className="text-lg font-semibold text-gray-900">{cita.horaInicio}</p>
                     <p className="text-xs text-gray-400">hrs</p>
@@ -258,15 +301,116 @@ const Dashboard = () => {
                      cita.estado === 'en_progreso' ? 'En progreso' :
                      cita.estado === 'completada' ? 'Completada' : cita.estado}
                   </span>
-                  <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <div className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </button>
+                  </div>
                 </div>
               ))
             )}
           </div>
         </div>
       </div>
+
+      {/* Modal detalle de cita */}
+      {citaSeleccionada && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setCitaSeleccionada(null)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Detalle de la Cita</h3>
+                <p className="text-sm text-gray-500">{citaSeleccionada.horaInicio} - {citaSeleccionada.horaFin || 'N/A'}</p>
+              </div>
+              <button onClick={() => setCitaSeleccionada(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Cliente */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Cliente
+                </h4>
+                <p className="font-semibold text-blue-900">{citaSeleccionada.nombreCliente}</p>
+                {citaSeleccionada.telefono && (
+                  <p className="text-sm text-blue-700 flex items-center gap-1 mt-1">
+                    <Phone className="w-3 h-3" />
+                    {citaSeleccionada.telefono}
+                  </p>
+                )}
+              </div>
+
+              {/* Servicios */}
+              <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                <h4 className="font-medium text-purple-800 mb-2 flex items-center gap-2">
+                  <Scissors className="w-4 h-4" />
+                  Servicios
+                </h4>
+                {citaSeleccionada.servicios?.length > 0 ? (
+                  <div className="space-y-2">
+                    {citaSeleccionada.servicios.map((servicio, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-1 border-b border-purple-100 last:border-0">
+                        <span className="text-purple-900">{servicio.nombreServicio}</span>
+                        <span className="font-medium text-purple-900">${servicio.precio || 0}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between pt-2 border-t border-purple-200">
+                      <span className="font-semibold text-purple-900">Total:</span>
+                      <span className="font-bold text-purple-900">
+                        ${citaSeleccionada.servicios.reduce((sum, s) => sum + (s.precio || 0), 0)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-purple-600 text-sm">Sin servicios</p>
+                )}
+              </div>
+
+              {/* Especialista */}
+              {citaSeleccionada.nombreEspecialista && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h4 className="font-medium text-gray-700 mb-1">Especialista</h4>
+                  <p className="font-semibold text-gray-900">{citaSeleccionada.nombreEspecialista}</p>
+                </div>
+              )}
+
+              {/* Estado de Pago */}
+              <div className={`rounded-xl p-4 ${citaSeleccionada.pagado ? 'bg-emerald-50 border border-emerald-100' : 'bg-amber-50 border border-amber-100'}`}>
+                <h4 className={`font-medium mb-2 flex items-center gap-2 ${citaSeleccionada.pagado ? 'text-emerald-800' : 'text-amber-800'}`}>
+                  <CreditCard className="w-4 h-4" />
+                  Estado de Pago
+                </h4>
+                <div className="flex items-center justify-between">
+                  <span className={`font-medium ${citaSeleccionada.pagado ? 'text-emerald-900' : 'text-amber-900'}`}>
+                    {citaSeleccionada.pagado ? '✓ Pagado' : 'Pendiente'}
+                  </span>
+                  <span className={`text-xl font-bold ${citaSeleccionada.pagado ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    ${citaSeleccionada.total || citaSeleccionada.servicios?.reduce((sum, s) => sum + (s.precio || 0), 0) || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => { setCitaSeleccionada(null); navigate('/admin/citas'); }}
+                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600"
+              >
+                Ver en Gestión de Citas
+              </button>
+              <button
+                onClick={() => setCitaSeleccionada(null)}
+                className="py-3 px-6 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };

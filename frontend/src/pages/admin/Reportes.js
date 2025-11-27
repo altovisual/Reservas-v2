@@ -116,10 +116,22 @@ const Reportes = () => {
             </button>
           ))}
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-          <Download className="w-4 h-4" />
-          Exportar
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/reportes/exportar-pdf?periodo=${periodo}`, '_blank')}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Exportar PDF
+          </button>
+          <button 
+            onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:5001/api'}/reportes/exportar?periodo=${periodo}`, '_blank')}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            CSV
+          </button>
+        </div>
       </div>
 
       {/* Cards de resumen */}

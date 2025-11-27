@@ -12,9 +12,11 @@ const server = http.createServer(app);
 // Socket.io
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-  }
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
 });
 
 // Middlewares
@@ -44,6 +46,7 @@ const uploadRoutes = require('./routes/upload');
 const galeriaRoutes = require('./routes/galeria');
 const resenasRoutes = require('./routes/resenas');
 const horariosRoutes = require('./routes/horarios');
+const reportesRoutes = require('./routes/reportes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
@@ -56,6 +59,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/galeria', galeriaRoutes);
 app.use('/api/resenas', resenasRoutes);
 app.use('/api/horarios', horariosRoutes);
+app.use('/api/reportes', reportesRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {
@@ -66,10 +70,21 @@ app.get('/api/health', (req, res) => {
 io.on('connection', (socket) => {
   console.log('📱 Cliente conectado:', socket.id);
   
+  // Enviar confirmación al cliente
+  socket.emit('connected', { message: 'Conectado al servidor', id: socket.id });
+  
   socket.on('disconnect', () => {
     console.log('📴 Cliente desconectado:', socket.id);
   });
 });
+
+// Log de clientes conectados cada 30 segundos
+setInterval(() => {
+  const clientCount = io.engine.clientsCount;
+  if (clientCount > 0) {
+    console.log(`📊 Clientes Socket.IO conectados: ${clientCount}`);
+  }
+}, 30000);
 
 // Hacer io accesible en las rutas
 app.set('io', io);

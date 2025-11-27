@@ -187,8 +187,8 @@ router.get('/', async (req, res) => {
     }
     
     const pagos = await Pago.find(filtro)
-      .populate('cliente', 'nombre apellido cedula telefono')
-      .populate('cita', 'fechaCita horaInicio')
+      .populate('cliente', 'nombre apellido cedula telefono email')
+      .populate('cita', 'fechaCita horaInicio horaFin servicios nombreEspecialista estado nombreCliente')
       .sort({ createdAt: -1 });
     
     res.json(pagos);

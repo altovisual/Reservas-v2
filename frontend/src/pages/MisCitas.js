@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Clock, User, Star, CheckCircle, XCircle, AlertCircle, ArrowLeft, MessageSquare, AlertTriangle, X, MapPin, Phone, DollarSign, Scissors, RefreshCw } from 'lucide-react';
 import api from '../services/api';
@@ -14,6 +14,7 @@ const estadoConfig = {
 const MisCitas = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const modalRef = useRef(null);
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState(location.state?.mensaje || null);
@@ -39,6 +40,13 @@ const MisCitas = () => {
       return () => clearTimeout(timer);
     }
   }, [mensaje]);
+
+  // Resetear scroll del modal cuando se abre
+  useEffect(() => {
+    if (modalDetalle && modalRef.current) {
+      modalRef.current.scrollTop = 0;
+    }
+  }, [modalDetalle]);
 
   const cargarCitas = async () => {
     try {
@@ -302,19 +310,26 @@ const MisCitas = () => {
         </div>
       )}
 
-      {/* Modal de detalle de cita */}
+      {/* Modal de detalle de cita - Bottom Sheet */}
       {modalDetalle && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end sm:items-center justify-center pb-16 sm:pb-0">
+        <div 
+          className="fixed inset-0 bg-black/50 z-[60]"
+          onClick={() => setModalDetalle(null)}
+        >
           <div 
-            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl max-h-[80vh] overflow-y-auto animate-scale-in"
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[90vh] flex flex-col animate-slide-up"
             onClick={e => e.stopPropagation()}
           >
+            {/* Indicador de arrastre */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
+            </div>
             {/* Header con estado */}
             {(() => {
               const config = estadoConfig[modalDetalle.estado] || estadoConfig.pendiente;
               const IconoEstado = config.icon;
               return (
-                <div className={`p-6 ${config.color.replace('border-', 'bg-').split(' ')[0]}`}>
+                <div className={`px-6 pb-4 ${config.color.replace('border-', 'bg-').split(' ')[0].replace('bg-', 'text-')}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${config.color.split(' ')[0]}`}>
@@ -336,8 +351,8 @@ const MisCitas = () => {
               );
             })()}
 
-            {/* Contenido */}
-            <div className="p-6 space-y-6">
+            {/* Contenido scrolleable */}
+            <div ref={modalRef} className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Servicios */}
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
@@ -417,14 +432,13 @@ const MisCitas = () => {
               )}
             </div>
 
-            {/* Acciones */}
-            <div className="p-4 border-t border-gray-100 space-y-3">
+            {/* Acciones - Footer sticky */}
+            <div className="sticky bottom-0 p-4 pb-8 border-t border-gray-100 space-y-3 bg-white">
               {['pendiente', 'confirmada'].includes(modalDetalle.estado) && (
                 <>
                   <button
                     onClick={() => {
                       setModalDetalle(null);
-                      // Navegar a reagendar con los datos de la cita
                       navigate('/reservar', { 
                         state: { 
                           reagendar: true, 
@@ -434,7 +448,7 @@ const MisCitas = () => {
                         }
                       });
                     }}
-                    className="w-full py-3 bg-blue-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
+                    className="w-full py-3.5 bg-blue-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
                   >
                     <RefreshCw className="w-5 h-5" /> Reagendar cita
                   </button>
@@ -443,7 +457,7 @@ const MisCitas = () => {
                       setModalDetalle(null);
                       setModalCancelar(modalDetalle);
                     }}
-                    className="w-full py-3 border border-red-200 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors"
+                    className="w-full py-3.5 border border-red-200 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors"
                   >
                     Cancelar cita
                   </button>
@@ -452,14 +466,14 @@ const MisCitas = () => {
               {modalDetalle.estado === 'confirmada' && (
                 <a
                   href={`tel:+580000000000`}
-                  className="w-full py-3 bg-emerald-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+                  className="w-full py-3.5 bg-emerald-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
                 >
                   <Phone className="w-5 h-5" /> Llamar al spa
                 </a>
               )}
               <button
                 onClick={() => setModalDetalle(null)}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                className="w-full py-3.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
               >
                 Cerrar
               </button>

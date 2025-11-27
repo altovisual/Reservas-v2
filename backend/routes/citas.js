@@ -5,17 +5,31 @@ const Servicio = require('../models/Servicio');
 const Especialista = require('../models/Especialista');
 const { protegerRuta } = require('../middleware/auth');
 
-// GET - Todas las citas (protegido)
+// GET - TODAS las citas sin filtro (protegido)
+router.get('/todas', protegerRuta, async (req, res) => {
+  try {
+    const citas = await Cita.find({})
+      .populate('especialistaId', 'nombre apellido color')
+      .populate('cliente', 'nombre apellido telefono')
+      .sort({ fechaCita: -1, horaInicio: 1 });
+    
+    console.log(`Total citas en BD: ${citas.length}`);
+    res.json(citas);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ mensaje: 'Error', error: error.message });
+  }
+});
+
+// GET - Citas con filtros opcionales (protegido)
 router.get('/', protegerRuta, async (req, res) => {
   try {
     const { fecha, estado, especialista } = req.query;
     let filtro = {};
 
     if (fecha) {
-      const inicio = new Date(fecha);
-      inicio.setHours(0, 0, 0, 0);
-      const fin = new Date(fecha);
-      fin.setHours(23, 59, 59, 999);
+      const inicio = new Date(fecha + 'T00:00:00');
+      const fin = new Date(fecha + 'T23:59:59.999');
       filtro.fechaCita = { $gte: inicio, $lte: fin };
     }
     if (estado) filtro.estado = estado;
@@ -23,9 +37,12 @@ router.get('/', protegerRuta, async (req, res) => {
 
     const citas = await Cita.find(filtro)
       .populate('especialistaId', 'nombre apellido color')
-      .sort({ horaInicio: 1 });
+      .populate('cliente', 'nombre apellido telefono')
+      .sort({ fechaCita: 1, horaInicio: 1 });
+    
     res.json(citas);
   } catch (error) {
+    console.error('Error:', error);
     res.status(500).json({ mensaje: 'Error', error: error.message });
   }
 });
@@ -94,7 +111,9 @@ router.get('/:id', async (req, res) => {
 // POST - Crear cita
 router.post('/', async (req, res) => {
   try {
-    const { servicios, especialistaId, clienteId, ...citaData } = req.body;
+    const { servicios, especialistaId, clienteId, fechaCita, ...citaData } = req.body;
+
+    console.log('Creando cita:', { fechaCita, especialistaId, clienteId });
 
     // Obtener info de servicios
     const serviciosInfo = await Promise.all(
@@ -112,10 +131,25 @@ router.post('/', async (req, res) => {
     // Obtener nombre del especialista
     const especialista = await Especialista.findById(especialistaId);
 
+    // Parsear la fecha correctamente
+    let fechaCitaParsed;
+    if (typeof fechaCita === 'string') {
+      // Si es string ISO o fecha simple, parsear
+      if (fechaCita.includes('T')) {
+        fechaCitaParsed = new Date(fechaCita);
+      } else {
+        // Formato YYYY-MM-DD, agregar hora para evitar problemas de timezone
+        fechaCitaParsed = new Date(fechaCita + 'T12:00:00');
+      }
+    } else {
+      fechaCitaParsed = new Date(fechaCita);
+    }
+
     // Preparar datos de la cita
     const datosCita = {
       ...citaData,
-      clienteId: clienteId, // Guardar como string
+      fechaCita: fechaCitaParsed,
+      clienteId: clienteId,
       servicios: serviciosInfo,
       especialistaId,
       nombreEspecialista: `${especialista.nombre} ${especialista.apellido}`
@@ -126,14 +160,22 @@ router.post('/', async (req, res) => {
       datosCita.cliente = clienteId;
     }
 
+    console.log('Datos de cita a guardar:', datosCita);
+
     const cita = await Cita.create(datosCita);
+
+    console.log('Cita creada:', cita._id, 'Fecha:', cita.fechaCita);
 
     // Emitir evento de nueva cita
     const io = req.app.get('io');
-    if (io) io.emit('nuevaCita', cita);
+    if (io) {
+      io.emit('nuevaCita', cita);
+      console.log('Evento nuevaCita emitido');
+    }
 
     res.status(201).json(cita);
   } catch (error) {
+    console.error('Error creando cita:', error);
     res.status(400).json({ mensaje: 'Error al crear cita', error: error.message });
   }
 });
@@ -186,14 +228,44 @@ router.post('/:id/cancelar', async (req, res) => {
 // POST - Confirmar pago
 router.post('/:id/pago', protegerRuta, async (req, res) => {
   try {
-    const { metodoPago, referenciaPago } = req.body;
-    const cita = await Cita.findByIdAndUpdate(req.params.id, {
-      pagado: true,
-      metodoPago,
-      referenciaPago
-    }, { new: true });
-    res.json(cita);
+    const { metodoPago, referenciaPago, monto } = req.body;
+    const Pago = require('../models/Pago');
+    
+    const cita = await Cita.findById(req.params.id);
+    if (!cita) {
+      return res.status(404).json({ mensaje: 'Cita no encontrada' });
+    }
+    
+    // Calcular monto total si no viene
+    const montoTotal = monto || cita.total || cita.servicios?.reduce((sum, s) => sum + (s.precio || 0), 0) || 0;
+    
+    // Normalizar método de pago
+    let metodoNormalizado = metodoPago || 'efectivo_bs';
+    if (metodoNormalizado === 'efectivo') metodoNormalizado = 'efectivo_bs';
+    
+    // Crear registro de pago
+    const pago = new Pago({
+      cita: cita._id,
+      cliente: cita.cliente || cita.clienteId,
+      monto: montoTotal,
+      metodoPago: metodoNormalizado,
+      datosPago: { referencia: referenciaPago },
+      estado: 'confirmado',
+      fechaVerificacion: new Date()
+    });
+    
+    await pago.save();
+    
+    // Actualizar cita
+    cita.pagado = true;
+    cita.metodoPago = metodoPago;
+    cita.referenciaPago = referenciaPago;
+    cita.pago = pago._id;
+    await cita.save();
+    
+    res.json({ cita, pago });
   } catch (error) {
+    console.error('Error al confirmar pago:', error);
     res.status(500).json({ mensaje: 'Error', error: error.message });
   }
 });

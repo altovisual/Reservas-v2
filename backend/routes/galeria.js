@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Galeria = require('../models/Galeria');
+const { uploadGaleria, eliminarImagen, getPublicIdFromUrl } = require('../config/cloudinary');
 
 // Obtener todas las imágenes
 router.get('/', async (req, res) => {
@@ -88,6 +89,25 @@ router.post('/:id/like', async (req, res) => {
   }
 });
 
+// Subir imagen a Cloudinary (admin)
+router.post('/upload', uploadGaleria.single('imagen'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ mensaje: 'No se proporcionó ninguna imagen' });
+    }
+    
+    // Cloudinary devuelve la URL en req.file.path
+    res.json({
+      success: true,
+      url: req.file.path,
+      public_id: req.file.filename
+    });
+  } catch (error) {
+    console.error('Error subiendo imagen:', error);
+    res.status(500).json({ mensaje: 'Error al subir imagen', error: error.message });
+  }
+});
+
 // Crear nueva imagen (admin)
 router.post('/', async (req, res) => {
   try {
@@ -119,10 +139,24 @@ router.put('/:id', async (req, res) => {
 // Eliminar imagen (admin)
 router.delete('/:id', async (req, res) => {
   try {
-    const imagen = await Galeria.findByIdAndDelete(req.params.id);
+    const imagen = await Galeria.findById(req.params.id);
     if (!imagen) {
       return res.status(404).json({ mensaje: 'Imagen no encontrada' });
     }
+    
+    // Eliminar de Cloudinary si existe
+    if (imagen.imagen) {
+      const publicId = getPublicIdFromUrl(imagen.imagen);
+      if (publicId) {
+        try {
+          await eliminarImagen(publicId);
+        } catch (cloudError) {
+          console.error('Error eliminando de Cloudinary:', cloudError);
+        }
+      }
+    }
+    
+    await Galeria.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Imagen eliminada correctamente' });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al eliminar imagen', error: error.message });
