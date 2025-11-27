@@ -317,7 +317,8 @@ const MisCitas = () => {
           onClick={() => setModalDetalle(null)}
         >
           <div 
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[90vh] flex flex-col animate-slide-up"
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up safe-area-bottom"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             onClick={e => e.stopPropagation()}
           >
             {/* Indicador de arrastre */}
@@ -433,7 +434,7 @@ const MisCitas = () => {
             </div>
 
             {/* Acciones - Footer sticky */}
-            <div className="sticky bottom-0 p-4 pb-8 border-t border-gray-100 space-y-3 bg-white">
+            <div className="flex-shrink-0 p-4 border-t border-gray-100 space-y-3 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
               {['pendiente', 'confirmada'].includes(modalDetalle.estado) && (
                 <>
                   <button

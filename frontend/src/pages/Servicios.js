@@ -28,16 +28,25 @@ const Servicios = () => {
     }
   }, []);
 
-  // Detectar scroll con umbral para evitar rebotes
+  // Detectar scroll con umbral y debounce para animación fluida
   useEffect(() => {
+    let ticking = false;
+    let lastScrollY = 0;
+    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      lastScrollY = window.scrollY;
       
-      // Solo cambiar estado si cruzamos el umbral significativamente
-      if (currentScrollY > 80 && !headerCollapsed) {
-        setHeaderCollapsed(true);
-      } else if (currentScrollY < 40 && headerCollapsed) {
-        setHeaderCollapsed(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          // Umbral más alto para evitar cambios bruscos
+          if (lastScrollY > 100 && !headerCollapsed) {
+            setHeaderCollapsed(true);
+          } else if (lastScrollY < 30 && headerCollapsed) {
+            setHeaderCollapsed(false);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -108,12 +117,20 @@ const Servicios = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
-      {/* Header Sticky con animación suave */}
-      <div className={`sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 text-white transition-shadow duration-300 ${headerCollapsed ? 'shadow-lg' : ''}`}>
+      {/* Header Sticky con animación suave tipo app nativa */}
+      <div className={`sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 text-white transition-all duration-300 ease-out ${headerCollapsed ? 'shadow-lg' : ''}`}>
         
-        {/* Contenido colapsable */}
-        <div className={`grid transition-all duration-500 ease-out ${headerCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
-          <div className="overflow-hidden">
+        {/* Contenido colapsable con animación fluida */}
+        <div 
+          className="overflow-hidden transition-all duration-400 ease-out"
+          style={{ 
+            maxHeight: headerCollapsed ? '0px' : '400px',
+            opacity: headerCollapsed ? 0 : 1,
+            transform: headerCollapsed ? 'translateY(-10px)' : 'translateY(0)',
+            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out, transform 0.3s ease-out'
+          }}
+        >
+          <div>
             <div className="px-4 pt-6 pb-4">
               <div className="flex justify-between items-center">
                 <div>

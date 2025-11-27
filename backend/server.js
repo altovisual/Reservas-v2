@@ -19,11 +19,17 @@ const io = new Server(server, {
   transports: ['websocket', 'polling']
 });
 
-// Middlewares
+// Middlewares - CORS configurado para producción
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-  credentials: true
+  origin: process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN || "http://localhost:3000"),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Manejar preflight requests
+app.options('*', cors());
+
 app.use(express.json());
 
 // Servir archivos estáticos (imágenes subidas)

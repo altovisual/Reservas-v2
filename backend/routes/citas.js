@@ -55,21 +55,39 @@ router.get('/hoy', protegerRuta, async (req, res) => {
     const manana = new Date(hoy);
     manana.setDate(manana.getDate() + 1);
 
+    // Obtener citas de hoy
     const citas = await Cita.find({
       fechaCita: { $gte: hoy, $lt: manana }
     }).populate('especialistaId', 'nombre apellido color').sort({ horaInicio: 1 });
 
+    // Obtener pagos de hoy
+    const Pago = require('../models/Pago');
+    const pagosHoy = await Pago.find({
+      createdAt: { $gte: hoy, $lt: manana },
+      estado: 'confirmado'
+    });
+    
+    // Obtener todas las citas para estadísticas generales
+    const todasLasCitas = await Cita.find({});
+    const todosLosPagos = await Pago.find({ estado: 'confirmado' });
+
+    const ingresosHoy = pagosHoy.reduce((sum, p) => sum + (p.monto || 0), 0);
+    const ingresosTotales = todosLosPagos.reduce((sum, p) => sum + (p.monto || 0), 0);
+
     const stats = {
-      total: citas.length,
-      pendientes: citas.filter(c => c.estado === 'pendiente').length,
-      confirmadas: citas.filter(c => c.estado === 'confirmada').length,
+      total: todasLasCitas.length,
+      citasHoy: citas.length,
+      pendientes: citas.filter(c => c.estado === 'pendiente' || c.estado === 'confirmada').length,
       enProgreso: citas.filter(c => c.estado === 'en_progreso').length,
-      completadas: citas.filter(c => c.estado === 'completada').length,
-      ingresos: citas.filter(c => c.pagado).reduce((sum, c) => sum + c.total, 0)
+      completadas: todasLasCitas.filter(c => c.estado === 'completada').length,
+      ingresos: ingresosHoy,
+      ingresosTotales: ingresosTotales,
+      promedioPorCita: todasLasCitas.length > 0 ? Math.round(ingresosTotales / todasLasCitas.filter(c => c.pagado).length) || 0 : 0
     };
 
     res.json({ citas, stats });
   } catch (error) {
+    console.error('Error en /hoy:', error);
     res.status(500).json({ mensaje: 'Error', error: error.message });
   }
 });
