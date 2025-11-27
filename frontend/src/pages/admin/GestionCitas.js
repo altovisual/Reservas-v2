@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity, UserSwitch, Users } from 'lucide-react';
+import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity, ArrowRightLeft, Users } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
@@ -566,7 +566,7 @@ const GestionCitas = () => {
                                 onClick={() => abrirModalReasignar(cita)}
                                 className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-200 flex items-center gap-1"
                               >
-                                <UserSwitch className="w-3 h-3" /> Reasignar
+                                <ArrowRightLeft className="w-3 h-3" /> Reasignar
                               </button>
                             </div>
                           )}
@@ -1022,7 +1022,7 @@ const GestionCitas = () => {
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <UserSwitch className="w-5 h-5 text-emerald-500" />
+                  <ArrowRightLeft className="w-5 h-5 text-emerald-500" />
                   Reasignar Cita
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -1123,7 +1123,7 @@ const GestionCitas = () => {
                   </>
                 ) : (
                   <>
-                    <UserSwitch className="w-5 h-5" /> Reasignar
+                    <ArrowRightLeft className="w-5 h-5" /> Reasignar
                   </>
                 )}
               </button>
