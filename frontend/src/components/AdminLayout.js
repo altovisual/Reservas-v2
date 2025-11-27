@@ -24,7 +24,8 @@ import {
   Trash2,
   CalendarPlus,
   CalendarX,
-  CalendarClock
+  CalendarClock,
+  DollarSign
 } from 'lucide-react';
 
 const AdminLayout = ({ children, title, subtitle }) => {
@@ -86,6 +87,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
     { label: 'Galería', icon: Image, path: '/admin/galeria' },
     { label: 'Reseñas', icon: Star, path: '/admin/resenas' },
     { label: 'Reportes', icon: BarChart3, path: '/admin/reportes' },
+    { label: 'Tasa BCV', icon: DollarSign, path: '/admin/tasa-bcv' },
     { label: 'Configuración', icon: Cog, path: '/admin/configuracion' },
   ];
 

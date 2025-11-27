@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { TasaBcvProvider } from './context/TasaBcvContext';
 
 // Páginas públicas
 import Servicios from './pages/Servicios';
@@ -23,6 +24,7 @@ import Galeria from './pages/admin/Galeria';
 import Resenas from './pages/admin/Resenas';
 import Pagos from './pages/admin/Pagos';
 import Horarios from './pages/admin/Horarios';
+import TasaBcv from './pages/admin/TasaBcv';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
 
@@ -59,6 +61,7 @@ function AppContent() {
             <Route path="/admin/resenas" element={<ProtectedRoute><Resenas /></ProtectedRoute>} />
             <Route path="/admin/pagos" element={<ProtectedRoute><Pagos /></ProtectedRoute>} />
             <Route path="/admin/horarios" element={<ProtectedRoute><Horarios /></ProtectedRoute>} />
+            <Route path="/admin/tasa-bcv" element={<ProtectedRoute><TasaBcv /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
@@ -73,7 +76,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
-          <AppContent />
+          <TasaBcvProvider>
+            <AppContent />
+          </TasaBcvProvider>
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -53,6 +53,7 @@ const galeriaRoutes = require('./routes/galeria');
 const resenasRoutes = require('./routes/resenas');
 const horariosRoutes = require('./routes/horarios');
 const reportesRoutes = require('./routes/reportes');
+const tasaBcvRoutes = require('./routes/tasaBcv');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
@@ -66,6 +67,7 @@ app.use('/api/galeria', galeriaRoutes);
 app.use('/api/resenas', resenasRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/reportes', reportesRoutes);
+app.use('/api/tasa-bcv', tasaBcvRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {

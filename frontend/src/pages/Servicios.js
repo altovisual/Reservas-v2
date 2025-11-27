@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Star, Search, ChevronRight, MapPin, Phone, Menu, X, Gift, Sparkles, Users, Calendar, Image, Scissors, Palette, Eye, Package } from 'lucide-react';
 import api from '../services/api';
+import { useTasaBcv } from '../context/TasaBcvContext';
 
 const categoriaIconos = {
   'Manicure': Sparkles, 'Pedicure': Sparkles, 'Uñas Acrílicas': Sparkles, 'Uñas en Gel': Sparkles,
@@ -10,6 +11,7 @@ const categoriaIconos = {
 
 const Servicios = () => {
   const navigate = useNavigate();
+  const { tasa, formatearBs } = useTasaBcv();
   const [servicios, setServicios] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
@@ -223,7 +225,10 @@ const Servicios = () => {
                     <h3 className="font-medium text-gray-900 text-sm truncate">{servicio.nombre}</h3>
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-xs text-gray-400">{servicio.duracion}min</span>
-                      <span className="text-emerald-600 font-bold text-sm">${servicio.precio}</span>
+                      <div className="text-right">
+                        <span className="text-emerald-600 font-bold text-sm">${servicio.precio}</span>
+                        {tasa && <p className="text-[10px] text-gray-400">{formatearBs(servicio.precio)}</p>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -276,7 +281,10 @@ const Servicios = () => {
                       <span className="flex items-center gap-1 text-gray-400 text-sm">
                         <Clock className="w-4 h-4" /> {servicio.duracion} min
                       </span>
-                      <span className="text-emerald-600 font-bold">${servicio.precio}</span>
+                      <div>
+                        <span className="text-emerald-600 font-bold">${servicio.precio}</span>
+                        {tasa && <span className="text-xs text-gray-400 ml-1">({formatearBs(servicio.precio)})</span>}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center pr-4">

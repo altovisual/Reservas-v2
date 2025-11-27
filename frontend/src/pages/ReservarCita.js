@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Check, ChevronRight, Star, Phone, Mail, Gift, FileText, Upload, Building, Smartphone, Copy, CheckCircle, Banknote } from 'lucide-react';
 import api from '../services/api';
+import { useTasaBcv } from '../context/TasaBcvContext';
 
 const ReservarCita = () => {
   const { servicioId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { tasa, formatearBs } = useTasaBcv();
   const [servicio, setServicio] = useState(null);
   const [especialistas, setEspecialistas] = useState([]);
   const [paso, setPaso] = useState(1);
@@ -593,7 +595,12 @@ const ReservarCita = () => {
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                   <span className="font-semibold text-gray-900">Total a pagar</span>
-                  <span className="text-2xl font-bold text-emerald-600">${servicio?.precio}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-emerald-600">${servicio?.precio}</span>
+                    {tasa && (
+                      <p className="text-sm text-gray-500">{formatearBs(servicio?.precio)}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
