@@ -28,20 +28,25 @@ const Servicios = () => {
     }
   }, []);
 
-  // Detectar scroll con umbral y debounce para animación fluida
+  // Estado para progreso de scroll (0 a 1)
+  const [scrollProgress, setScrollProgress] = useState(0);
+  
+  // Detectar scroll con progreso suave
   useEffect(() => {
     let ticking = false;
-    let lastScrollY = 0;
     
     const handleScroll = () => {
-      lastScrollY = window.scrollY;
-      
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          // Umbral más alto para evitar cambios bruscos
-          if (lastScrollY > 100 && !headerCollapsed) {
+          const scrollY = window.scrollY;
+          // Calcular progreso: 0 = arriba, 1 = colapsado (después de 150px)
+          const progress = Math.min(scrollY / 150, 1);
+          setScrollProgress(progress);
+          
+          // Solo cambiar estado cuando cruza umbrales claros
+          if (progress >= 0.9 && !headerCollapsed) {
             setHeaderCollapsed(true);
-          } else if (lastScrollY < 30 && headerCollapsed) {
+          } else if (progress <= 0.1 && headerCollapsed) {
             setHeaderCollapsed(false);
           }
           ticking = false;
@@ -117,17 +122,17 @@ const Servicios = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
-      {/* Header Sticky con animación suave tipo app nativa */}
-      <div className={`sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 text-white transition-all duration-300 ease-out ${headerCollapsed ? 'shadow-lg' : ''}`}>
+      {/* Header Sticky con animación suave proporcional al scroll */}
+      <div className={`sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 text-white ${scrollProgress > 0.5 ? 'shadow-lg' : ''}`}>
         
-        {/* Contenido colapsable con animación fluida */}
+        {/* Contenido colapsable con animación proporcional al scroll */}
         <div 
-          className="overflow-hidden transition-all duration-400 ease-out"
+          className="overflow-hidden"
           style={{ 
-            maxHeight: headerCollapsed ? '0px' : '400px',
-            opacity: headerCollapsed ? 0 : 1,
-            transform: headerCollapsed ? 'translateY(-10px)' : 'translateY(0)',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out, transform 0.3s ease-out'
+            maxHeight: `${Math.max(0, 300 * (1 - scrollProgress))}px`,
+            opacity: 1 - scrollProgress,
+            transform: `translateY(${-10 * scrollProgress}px)`,
+            transition: 'none'
           }}
         >
           <div>

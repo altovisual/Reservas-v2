@@ -313,12 +313,11 @@ const MisCitas = () => {
       {/* Modal de detalle de cita - Bottom Sheet */}
       {modalDetalle && (
         <div 
-          className="fixed inset-0 bg-black/50 z-[60]"
+          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
           onClick={() => setModalDetalle(null)}
         >
           <div 
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up safe-area-bottom"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            className="w-full bg-white rounded-t-3xl max-h-[80vh] flex flex-col animate-slide-up"
             onClick={e => e.stopPropagation()}
           >
             {/* Indicador de arrastre */}
@@ -434,10 +433,13 @@ const MisCitas = () => {
               )}
             </div>
 
-            {/* Acciones - Footer sticky */}
-            <div className="flex-shrink-0 p-4 border-t border-gray-100 space-y-3 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            {/* Acciones - Footer con safe area */}
+            <div 
+              className="flex-shrink-0 p-4 border-t border-gray-100 space-y-2 bg-white"
+              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+            >
               {['pendiente', 'confirmada'].includes(modalDetalle.estado) && (
-                <>
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setModalDetalle(null);
@@ -450,32 +452,32 @@ const MisCitas = () => {
                         }
                       });
                     }}
-                    className="w-full py-3.5 bg-blue-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
+                    className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors text-sm"
                   >
-                    <RefreshCw className="w-5 h-5" /> Reagendar cita
+                    <RefreshCw className="w-4 h-4" /> Reagendar
                   </button>
                   <button
                     onClick={() => {
                       setModalDetalle(null);
                       setModalCancelar(modalDetalle);
                     }}
-                    className="w-full py-3.5 border border-red-200 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors"
+                    className="flex-1 py-3 border border-red-200 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors text-sm"
                   >
-                    Cancelar cita
+                    Cancelar
                   </button>
-                </>
+                </div>
               )}
               {modalDetalle.estado === 'confirmada' && (
                 <a
                   href={`tel:+580000000000`}
-                  className="w-full py-3.5 bg-emerald-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+                  className="w-full py-3 bg-emerald-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors text-sm"
                 >
-                  <Phone className="w-5 h-5" /> Llamar al spa
+                  <Phone className="w-4 h-4" /> Llamar al spa
                 </a>
               )}
               <button
                 onClick={() => setModalDetalle(null)}
-                className="w-full py-3.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                className="w-full py-2.5 text-gray-500 font-medium hover:text-gray-700 transition-colors text-sm"
               >
                 Cerrar
               </button>

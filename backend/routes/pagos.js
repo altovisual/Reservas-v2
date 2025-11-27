@@ -3,6 +3,19 @@ const router = express.Router();
 const Pago = require('../models/Pago');
 const Cliente = require('../models/Cliente');
 const Cita = require('../models/Cita');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configurar multer para memoria
+const storage = multer.memoryStorage();
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // Datos de pago del negocio (configurables)
 const DATOS_PAGO_NEGOCIO = {
@@ -56,6 +69,39 @@ router.get('/tasa-dia', async (req, res) => {
     res.json(tasa);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
+  }
+});
+
+// Subir comprobante a Cloudinary
+router.post('/comprobante', upload.single('comprobante'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ mensaje: 'No se proporcionó imagen' });
+    }
+
+    // Subir a Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { 
+          folder: 'nailspa/comprobantes',
+          resource_type: 'image',
+          transformation: [{ quality: 'auto:good', fetch_format: 'auto' }]
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
+
+    res.json({ 
+      url: result.secure_url,
+      public_id: result.public_id
+    });
+  } catch (error) {
+    console.error('Error subiendo comprobante:', error);
+    res.status(500).json({ mensaje: 'Error al subir comprobante', error: error.message });
   }
 });
 
