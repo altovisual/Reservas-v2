@@ -107,7 +107,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener cliente por ID
+// Obtener cliente por ID con estadísticas
 router.get('/:id', async (req, res) => {
   try {
     // Validar ID
@@ -128,9 +128,45 @@ router.get('/:id', async (req, res) => {
       .populate('especialistaId', 'nombre apellido')
       .sort({ fechaCita: -1 });
     
+    // Calcular estadísticas reales
+    const citasCompletadas = citas.filter(c => c.estado === 'completada');
+    const totalGastadoReal = citasCompletadas.reduce((sum, c) => sum + (c.total || 0), 0);
+    
+    // Actualizar stats si hay diferencia
+    if (cliente.totalCitas !== citasCompletadas.length || cliente.totalGastado !== totalGastadoReal) {
+      cliente.totalCitas = citasCompletadas.length;
+      cliente.totalGastado = totalGastadoReal;
+      cliente.puntos = Math.floor(totalGastadoReal); // 1 punto por $1
+      await cliente.save();
+    }
+    
+    // Calcular nivel y siguiente nivel
+    const niveles = [
+      { nombre: 'bronce', min: 0, max: 500 },
+      { nombre: 'plata', min: 500, max: 2000 },
+      { nombre: 'oro', min: 2000, max: 5000 },
+      { nombre: 'platino', min: 5000, max: Infinity }
+    ];
+    
+    const nivelActual = niveles.find(n => totalGastadoReal >= n.min && totalGastadoReal < n.max) || niveles[0];
+    const siguienteNivel = niveles[niveles.indexOf(nivelActual) + 1];
+    
     res.json({
-      cliente,
-      historialCitas: citas
+      cliente: {
+        ...cliente.toObject(),
+        totalCitas: citasCompletadas.length,
+        totalGastado: totalGastadoReal,
+        puntos: Math.floor(totalGastadoReal)
+      },
+      historialCitas: citas,
+      recompensas: {
+        nivel: nivelActual.nombre,
+        puntos: Math.floor(totalGastadoReal),
+        totalGastado: totalGastadoReal,
+        siguienteNivel: siguienteNivel ? siguienteNivel.nombre : null,
+        faltaParaSiguiente: siguienteNivel ? siguienteNivel.min - totalGastadoReal : 0,
+        progreso: siguienteNivel ? ((totalGastadoReal - nivelActual.min) / (siguienteNivel.min - nivelActual.min)) * 100 : 100
+      }
     });
   } catch (error) {
     console.error('Error obteniendo cliente:', error);

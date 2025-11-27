@@ -353,64 +353,65 @@ const MisCitas = () => {
             })()}
 
             {/* Contenido scrolleable */}
-            <div ref={modalRef} className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Servicios */}
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
-                  <Scissors className="w-4 h-4" /> Servicios
-                </h4>
-                <div className="space-y-2">
-                  {modalDetalle.servicios?.map((s, i) => (
-                    <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                      <span className="font-medium text-gray-900">{s.nombreServicio}</span>
-                      <span className="text-emerald-600 font-semibold">${s.precio}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Fecha y hora */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
+            <div ref={modalRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+              {/* Fecha y hora - Primero para mejor visibilidad */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 text-gray-500 mb-1">
                     <Calendar className="w-4 h-4" />
-                    <span className="text-sm">Fecha</span>
+                    <span className="text-xs">Fecha</span>
                   </div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-gray-900 text-sm">
                     {new Date(modalDetalle.fechaCita).toLocaleDateString('es', { 
-                      weekday: 'long', day: 'numeric', month: 'long' 
+                      weekday: 'short', day: 'numeric', month: 'short' 
                     })}
                   </p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="p-3 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 text-gray-500 mb-1">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">Hora</span>
+                    <span className="text-xs">Hora</span>
                   </div>
-                  <p className="font-semibold text-gray-900">{modalDetalle.horaInicio}</p>
-                  {modalDetalle.horaFin && (
-                    <p className="text-sm text-gray-500">hasta {modalDetalle.horaFin}</p>
-                  )}
+                  <p className="font-semibold text-gray-900 text-sm">{modalDetalle.horaInicio}</p>
                 </div>
               </div>
 
+              {/* Servicios */}
+              {modalDetalle.servicios && modalDetalle.servicios.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-2">
+                    <Scissors className="w-3 h-3" /> Servicios
+                  </h4>
+                  <div className="space-y-2">
+                    {modalDetalle.servicios.map((s, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                        <span className="font-medium text-gray-900 text-sm">{s.nombreServicio}</span>
+                        <span className="text-emerald-600 font-semibold text-sm">${s.precio}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Especialista */}
-              <div className="p-4 bg-gray-50 rounded-xl">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <div className="flex items-center gap-2 text-gray-500 mb-1">
                   <User className="w-4 h-4" />
-                  <span className="text-sm">Especialista</span>
+                  <span className="text-xs">Especialista</span>
                 </div>
-                <p className="font-semibold text-gray-900">{modalDetalle.nombreEspecialista}</p>
+                <p className="font-semibold text-gray-900 text-sm">
+                  {modalDetalle.nombreEspecialista || modalDetalle.especialistaId?.nombre || 'Por asignar'}
+                </p>
               </div>
 
               {/* Ubicación */}
-              <div className="p-4 bg-gray-50 rounded-xl">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <div className="flex items-center gap-2 text-gray-500 mb-1">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">Ubicación</span>
+                  <span className="text-xs">Ubicación</span>
                 </div>
-                <p className="font-semibold text-gray-900">Nail Spa</p>
-                <p className="text-sm text-gray-500">San Felipe, Yaracuy</p>
+                <p className="font-semibold text-gray-900 text-sm">Nail Spa</p>
+                <p className="text-xs text-gray-500">San Felipe, Yaracuy</p>
               </div>
 
               {/* Total */}

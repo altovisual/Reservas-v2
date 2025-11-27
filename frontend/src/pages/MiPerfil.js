@@ -14,6 +14,7 @@ const MiPerfil = () => {
   const navigate = useNavigate();
   const [cliente, setCliente] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [recompensas, setRecompensas] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modoOscuro, setModoOscuro] = useState(() => localStorage.getItem('modoOscuro') === 'true');
   const [notificaciones, setNotificaciones] = useState(() => localStorage.getItem('notificaciones') !== 'false');
@@ -52,6 +53,7 @@ const MiPerfil = () => {
       const response = await api.get(`/clientes/${clienteId}`);
       setCliente(response.data.cliente);
       setHistorial(response.data.historialCitas || []);
+      setRecompensas(response.data.recompensas || null);
     } catch (error) {
       console.error('Error:', error);
       if (error.response?.status === 404) {
@@ -118,10 +120,17 @@ const MiPerfil = () => {
 
   if (!cliente) return null;
 
-  const nivel = nivelConfig[cliente.nivel] || nivelConfig.bronce;
-  const progreso = nivel.siguiente 
-    ? Math.min((cliente.totalGastado / nivel.siguiente) * 100, 100) 
-    : 100;
+  // Usar datos de recompensas si están disponibles, sino usar datos del cliente
+  const puntos = recompensas?.puntos ?? cliente.puntos ?? 0;
+  const totalGastado = recompensas?.totalGastado ?? cliente.totalGastado ?? 0;
+  const totalCitas = cliente.totalCitas ?? 0;
+  const nivelNombre = recompensas?.nivel ?? cliente.nivel ?? 'bronce';
+  
+  const nivel = nivelConfig[nivelNombre] || nivelConfig.bronce;
+  const progreso = recompensas?.progreso ?? (nivel.siguiente 
+    ? Math.min((totalGastado / nivel.siguiente) * 100, 100) 
+    : 100);
+  const faltaParaSiguiente = recompensas?.faltaParaSiguiente ?? (nivel.siguiente ? nivel.siguiente - totalGastado : 0);
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
@@ -133,11 +142,11 @@ const MiPerfil = () => {
           </div>
           <div className="flex-1">
             <h1 className="text-xl font-bold">{cliente.nombre} {cliente.apellido}</h1>
-            <p className="text-white/80 text-sm">Cliente {cliente.nivel}</p>
+            <p className="text-white/80 text-sm capitalize">Cliente {nivelNombre}</p>
             <div className="flex items-center gap-2 mt-2">
               <div className="bg-white/20 px-3 py-1 rounded-full text-sm">
                 <Star className="w-4 h-4 inline mr-1" />
-                {cliente.puntos} puntos
+                {puntos} puntos
               </div>
             </div>
           </div>
@@ -147,7 +156,7 @@ const MiPerfil = () => {
         {nivel.siguiente && (
           <div className="mt-4">
             <div className="flex justify-between text-xs text-white/80 mb-1">
-              <span>${cliente.totalGastado} gastado</span>
+              <span>${totalGastado} gastado</span>
               <span>Siguiente nivel: ${nivel.siguiente}</span>
             </div>
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
@@ -156,6 +165,11 @@ const MiPerfil = () => {
                 style={{ width: `${progreso}%` }}
               ></div>
             </div>
+            {faltaParaSiguiente > 0 && (
+              <p className="text-xs text-white/70 mt-1 text-center">
+                Te faltan ${faltaParaSiguiente} para subir de nivel
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -164,15 +178,15 @@ const MiPerfil = () => {
       <div className="px-4 -mt-3">
         <div className="bg-white rounded-2xl shadow-lg p-4 grid grid-cols-3 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-emerald-600">{cliente.totalCitas}</p>
+            <p className="text-2xl font-bold text-emerald-600">{totalCitas}</p>
             <p className="text-xs text-gray-500">Citas</p>
           </div>
           <div className="text-center border-x border-gray-100">
-            <p className="text-2xl font-bold text-emerald-600">${cliente.totalGastado}</p>
+            <p className="text-2xl font-bold text-emerald-600">${totalGastado}</p>
             <p className="text-xs text-gray-500">Total</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-emerald-600">{cliente.puntos}</p>
+            <p className="text-2xl font-bold text-emerald-600">{puntos}</p>
             <p className="text-xs text-gray-500">Puntos</p>
           </div>
         </div>

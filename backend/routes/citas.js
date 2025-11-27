@@ -204,11 +204,28 @@ router.patch('/:id/estado', protegerRuta, async (req, res) => {
     const { estado } = req.body;
     const cita = await Cita.findByIdAndUpdate(req.params.id, { estado }, { new: true });
 
-    // Si se completa, actualizar stats del especialista
+    // Si se completa, actualizar stats del especialista y puntos del cliente
     if (estado === 'completada') {
       await Especialista.findByIdAndUpdate(cita.especialistaId, {
         $inc: { citasCompletadas: 1 }
       });
+
+      // Actualizar puntos y estadísticas del cliente
+      const Cliente = require('../models/Cliente');
+      const clienteId = cita.clienteId || cita.cliente;
+      if (clienteId) {
+        // 1 punto por cada $1 gastado
+        const puntosGanados = Math.floor(cita.total || 0);
+        await Cliente.findByIdAndUpdate(clienteId, {
+          $inc: { 
+            puntos: puntosGanados,
+            totalCitas: 1,
+            totalGastado: cita.total || 0
+          },
+          ultimaVisita: new Date()
+        });
+        console.log(`✨ Cliente ${clienteId} ganó ${puntosGanados} puntos`);
+      }
     }
 
     const io = req.app.get('io');

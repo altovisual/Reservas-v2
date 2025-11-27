@@ -201,7 +201,7 @@ const Servicios = () => {
         </div>
 
         {/* Búsqueda - siempre visible */}
-        <div className={`px-4 transition-all duration-300 ${headerCollapsed ? 'py-3' : 'pb-5'}`}>
+        <div className={`px-4 transition-all duration-300 ${headerCollapsed ? 'py-3' : 'pb-4'}`}>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -211,6 +211,29 @@ const Servicios = () => {
               onChange={(e) => setBusqueda(e.target.value)}
               className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-300 text-gray-800 shadow-lg"
             />
+          </div>
+        </div>
+
+        {/* Categorías - Sticky con búsqueda */}
+        <div className="px-4 pb-3 overflow-x-auto bg-gradient-to-r from-emerald-500 to-teal-500">
+          <div className="flex gap-2 pb-1">
+            {categorias.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategoriaActiva(cat)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
+                  categoriaActiva === cat
+                    ? 'bg-white text-emerald-600 shadow-lg'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+              >
+                {(() => {
+                  const IconoCat = categoriaIconos[cat] || Sparkles;
+                  return <IconoCat className="w-4 h-4" />;
+                })()}
+                <span className="text-sm font-medium">{cat}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -248,31 +271,8 @@ const Servicios = () => {
         </div>
       )}
 
-      {/* Categorías */}
-      <div className="px-4 py-3 overflow-x-auto">
-        <div className="flex gap-2 pb-1">
-          {categorias.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategoriaActiva(cat)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${
-                categoriaActiva === cat
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                  : 'bg-white text-gray-700 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {(() => {
-                const IconoCat = categoriaIconos[cat] || Sparkles;
-                return <IconoCat className="w-4 h-4" />;
-              })()}
-              <span className="text-sm font-medium">{cat}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Servicios */}
-      <div className="px-4 space-y-3">
+      <div className="px-4 pt-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">
             {categoriaActiva === 'Todos' ? 'Todos los Servicios' : categoriaActiva}
