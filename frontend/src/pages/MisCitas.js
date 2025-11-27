@@ -22,6 +22,10 @@ const MisCitas = () => {
   const [modalDetalle, setModalDetalle] = useState(null);
   const [cancelando, setCancelando] = useState(false);
   const [filtro, setFiltro] = useState('todas');
+  const [modalCalificar, setModalCalificar] = useState(null);
+  const [calificacion, setCalificacion] = useState(0);
+  const [comentario, setComentario] = useState('');
+  const [enviandoResena, setEnviandoResena] = useState(false);
 
   const clienteId = localStorage.getItem('clienteId');
 
@@ -72,6 +76,32 @@ const MisCitas = () => {
     } finally {
       setCancelando(false);
     }
+  };
+
+  const enviarCalificacion = async () => {
+    if (!modalCalificar || calificacion === 0) return;
+    setEnviandoResena(true);
+    try {
+      await api.post(`/citas/${modalCalificar._id}/calificar`, {
+        calificacion,
+        comentario
+      });
+      setModalCalificar(null);
+      setCalificacion(0);
+      setComentario('');
+      setMensaje('¡Gracias por tu reseña!');
+      cargarCitas();
+    } catch (error) {
+      alert('Error al enviar reseña');
+    } finally {
+      setEnviandoResena(false);
+    }
+  };
+
+  const abrirModalCalificar = (cita, estrellas = 0) => {
+    setModalCalificar(cita);
+    setCalificacion(estrellas);
+    setComentario('');
   };
 
   // Filtrar citas
@@ -227,17 +257,40 @@ const MisCitas = () => {
                   )}
 
                   {cita.estado === 'completada' && !cita.calificacion && (
-                    <div className="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <div 
+                      className="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center gap-2 mb-3">
                         <MessageSquare className="w-4 h-4 text-emerald-600" />
                         <p className="text-sm font-medium text-emerald-800">¿Cómo fue tu experiencia?</p>
                       </div>
                       <div className="flex gap-2 justify-center">
                         {[1,2,3,4,5].map(n => (
-                          <button key={n} className="p-2 hover:scale-110 transition-transform">
+                          <button 
+                            key={n} 
+                            className="p-2 hover:scale-110 transition-transform"
+                            onClick={() => abrirModalCalificar(cita, n)}
+                          >
                             <Star className="w-8 h-8 text-gray-300 hover:text-amber-400 hover:fill-amber-400 transition-colors" />
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {cita.estado === 'completada' && cita.calificacion && (
+                    <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1,2,3,4,5].map(n => (
+                            <Star 
+                              key={n} 
+                              className={`w-5 h-5 ${n <= cita.calificacion ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-amber-700 font-medium">Tu calificación</span>
                       </div>
                     </div>
                   )}
@@ -310,42 +363,50 @@ const MisCitas = () => {
         </div>
       )}
 
-      {/* Modal de detalle de cita - Bottom Sheet */}
+      {/* Modal de detalle de cita - Full Screen */}
       {modalDetalle && (
         <div 
-          className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
           onClick={() => setModalDetalle(null)}
         >
           <div 
-            className="w-full bg-white rounded-t-3xl max-h-[80vh] flex flex-col animate-slide-up"
+            className="w-full max-w-md bg-white rounded-3xl max-h-[90vh] flex flex-col animate-scale-in overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            {/* Indicador de arrastre */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
-            </div>
-            {/* Header con estado */}
+            {/* Header con estado - Coloreado */}
             {(() => {
               const config = estadoConfig[modalDetalle.estado] || estadoConfig.pendiente;
               const IconoEstado = config.icon;
+              const bgColor = modalDetalle.estado === 'completada' ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                              modalDetalle.estado === 'confirmada' ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                              modalDetalle.estado === 'cancelada' ? 'bg-gradient-to-r from-red-500 to-rose-500' :
+                              modalDetalle.estado === 'en_progreso' ? 'bg-gradient-to-r from-purple-500 to-violet-500' :
+                              'bg-gradient-to-r from-amber-500 to-orange-500';
               return (
-                <div className={`px-6 pb-4 ${config.color.replace('border-', 'bg-').split(' ')[0].replace('bg-', 'text-')}`}>
+                <div className={`${bgColor} text-white p-6`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${config.color.split(' ')[0]}`}>
-                        <IconoEstado className="w-6 h-6" />
+                      <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                        <IconoEstado className="w-7 h-7" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">{config.texto}</p>
-                        <p className="text-sm opacity-80">{config.descripcion}</p>
+                        <p className="font-bold text-xl">{config.texto}</p>
+                        <p className="text-sm text-white/80">{config.descripcion}</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setModalDetalle(null)}
-                      className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                      className="p-2 hover:bg-white/20 rounded-full transition-colors"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-6 h-6" />
                     </button>
+                  </div>
+                  {/* Servicio principal */}
+                  <div className="mt-4 pt-4 border-t border-white/20">
+                    <p className="text-white/70 text-sm">Servicio</p>
+                    <p className="font-semibold text-lg">
+                      {modalDetalle.servicios?.map(s => s.nombreServicio).join(', ')}
+                    </p>
                   </div>
                 </div>
               );
@@ -433,11 +494,8 @@ const MisCitas = () => {
               )}
             </div>
 
-            {/* Acciones - Footer con safe area */}
-            <div 
-              className="flex-shrink-0 p-4 border-t border-gray-100 space-y-2 bg-white"
-              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
-            >
+            {/* Acciones - Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-gray-100 space-y-2 bg-gray-50">
               {['pendiente', 'confirmada'].includes(modalDetalle.estado) && (
                 <div className="flex gap-2">
                   <button
@@ -452,34 +510,130 @@ const MisCitas = () => {
                         }
                       });
                     }}
-                    className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors text-sm"
+                    className="flex-1 py-3.5 bg-blue-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
                   >
-                    <RefreshCw className="w-4 h-4" /> Reagendar
+                    <RefreshCw className="w-5 h-5" /> Reagendar
                   </button>
                   <button
                     onClick={() => {
                       setModalDetalle(null);
                       setModalCancelar(modalDetalle);
                     }}
-                    className="flex-1 py-3 border border-red-200 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-colors text-sm"
+                    className="flex-1 py-3.5 bg-white border border-red-200 text-red-500 rounded-2xl font-semibold hover:bg-red-50 transition-colors"
                   >
                     Cancelar
                   </button>
                 </div>
               )}
+              {modalDetalle.estado === 'completada' && !modalDetalle.calificacion && (
+                <button
+                  onClick={() => {
+                    setModalDetalle(null);
+                    abrirModalCalificar(modalDetalle, 0);
+                  }}
+                  className="w-full py-3.5 bg-amber-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-amber-600 transition-colors"
+                >
+                  <Star className="w-5 h-5" /> Calificar experiencia
+                </button>
+              )}
               {modalDetalle.estado === 'confirmada' && (
                 <a
                   href={`tel:+580000000000`}
-                  className="w-full py-3 bg-emerald-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors text-sm"
+                  className="w-full py-3.5 bg-emerald-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
                 >
-                  <Phone className="w-4 h-4" /> Llamar al spa
+                  <Phone className="w-5 h-5" /> Llamar al spa
                 </a>
               )}
               <button
                 onClick={() => setModalDetalle(null)}
-                className="w-full py-2.5 text-gray-500 font-medium hover:text-gray-700 transition-colors text-sm"
+                className="w-full py-3 text-gray-500 font-medium hover:text-gray-700 transition-colors"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Calificación */}
+      {modalCalificar && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4"
+          onClick={() => setModalCalificar(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-sm w-full overflow-hidden animate-scale-in"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-6 text-center bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Star className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold">¿Cómo fue tu experiencia?</h3>
+              <p className="text-emerald-100 text-sm mt-1">
+                {modalCalificar.servicios?.map(s => s.nombreServicio).join(', ')}
+              </p>
+            </div>
+
+            {/* Estrellas */}
+            <div className="p-6">
+              <div className="flex justify-center gap-2 mb-6">
+                {[1,2,3,4,5].map(n => (
+                  <button 
+                    key={n}
+                    onClick={() => setCalificacion(n)}
+                    className="p-1 hover:scale-110 transition-transform"
+                  >
+                    <Star 
+                      className={`w-10 h-10 transition-colors ${
+                        n <= calificacion 
+                          ? 'text-amber-400 fill-amber-400' 
+                          : 'text-gray-300 hover:text-amber-300'
+                      }`} 
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {calificacion > 0 && (
+                <p className="text-center text-gray-600 mb-4">
+                  {calificacion === 5 ? '¡Excelente! 🎉' : 
+                   calificacion === 4 ? '¡Muy bien! 😊' :
+                   calificacion === 3 ? 'Bien 👍' :
+                   calificacion === 2 ? 'Regular 😐' : 'Necesita mejorar 😕'}
+                </p>
+              )}
+
+              {/* Comentario */}
+              <textarea
+                value={comentario}
+                onChange={(e) => setComentario(e.target.value)}
+                placeholder="Cuéntanos más sobre tu experiencia (opcional)"
+                className="w-full p-4 border border-gray-200 rounded-2xl resize-none h-24 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-gray-700"
+              />
+            </div>
+
+            {/* Botones */}
+            <div className="p-4 bg-gray-50 flex gap-3">
+              <button
+                onClick={() => setModalCalificar(null)}
+                className="flex-1 py-3.5 bg-white border border-gray-200 text-gray-700 rounded-2xl font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={enviarCalificacion}
+                disabled={calificacion === 0 || enviandoResena}
+                className="flex-1 py-3.5 bg-emerald-500 text-white rounded-2xl font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {enviandoResena ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Star className="w-5 h-5" /> Enviar
+                  </>
+                )}
               </button>
             </div>
           </div>
