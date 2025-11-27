@@ -35,9 +35,20 @@ app.use(express.json());
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Servicio de recordatorios
+const { iniciarServicioRecordatorios } = require('./services/reminderService');
+
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nailspa')
-  .then(() => console.log('✅ Conectado a MongoDB - NailSpa'))
+  .then(() => {
+    console.log('✅ Conectado a MongoDB - NailSpa');
+    // Iniciar servicio de recordatorios después de conectar a la BD
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      iniciarServicioRecordatorios();
+    } else {
+      console.log('⚠️ Servicio de emails deshabilitado (configurar EMAIL_USER y EMAIL_PASS)');
+    }
+  })
   .catch(err => console.error('❌ Error MongoDB:', err));
 
 // Rutas

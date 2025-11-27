@@ -53,7 +53,13 @@ const citaSchema = new mongoose.Schema({
   comentarioCalificacion: { type: String },
   
   // Origen
-  origen: { type: String, enum: ['web', 'telefono', 'presencial', 'whatsapp'], default: 'web' }
+  origen: { type: String, enum: ['web', 'telefono', 'presencial', 'whatsapp'], default: 'web' },
+  
+  // Notificaciones
+  recordatorioEnviado: { type: Boolean, default: false },
+  fechaRecordatorio: { type: Date },
+  facturaEnviada: { type: Boolean, default: false },
+  fechaFactura: { type: Date }
 }, { timestamps: true });
 
 // Calcular totales antes de guardar

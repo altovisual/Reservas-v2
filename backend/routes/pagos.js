@@ -5,6 +5,7 @@ const Cliente = require('../models/Cliente');
 const Cita = require('../models/Cita');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
+const { enviarFactura } = require('../services/emailService');
 
 // Configurar Cloudinary
 cloudinary.config({
@@ -160,8 +161,18 @@ router.post('/', async (req, res) => {
       
       // Actualizar estado de la cita
       cita.estado = 'confirmada';
+      cita.pagado = true;
       cita.pago = pago._id;
+      cita.facturaEnviada = true;
+      cita.fechaFactura = new Date();
       await cita.save();
+      
+      // Enviar factura por email si el cliente tiene email
+      if (cita.email) {
+        enviarFactura(cita, pago).catch(err => {
+          console.error('Error enviando factura:', err.message);
+        });
+      }
     }
     
     res.status(201).json({
@@ -202,10 +213,20 @@ router.patch('/:id/verificar', async (req, res) => {
         ultimaVisita: new Date()
       });
       
-      await Cita.findByIdAndUpdate(pago.cita, {
+      const cita = await Cita.findByIdAndUpdate(pago.cita, {
         estado: 'confirmada',
-        pago: pago._id
-      });
+        pagado: true,
+        pago: pago._id,
+        facturaEnviada: true,
+        fechaFactura: new Date()
+      }, { new: true });
+      
+      // Enviar factura por email si el cliente tiene email
+      if (cita && cita.email) {
+        enviarFactura(cita, pago).catch(err => {
+          console.error('Error enviando factura:', err.message);
+        });
+      }
     }
     
     res.json({
