@@ -1,4 +1,5 @@
 {
+  "alias": ["nailspa-reservas.vercel.app"],
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
