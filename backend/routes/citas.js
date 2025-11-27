@@ -303,6 +303,104 @@ router.post('/:id/cancelar', async (req, res) => {
   }
 });
 
+// PATCH - Reasignar cita a otro especialista
+router.patch('/:id/reasignar', protegerRuta, async (req, res) => {
+  try {
+    const { especialistaId } = req.body;
+    
+    if (!especialistaId) {
+      return res.status(400).json({ mensaje: 'Se requiere especialistaId' });
+    }
+    
+    const cita = await Cita.findById(req.params.id);
+    if (!cita) {
+      return res.status(404).json({ mensaje: 'Cita no encontrada' });
+    }
+    
+    // Solo se pueden reasignar citas pendientes, confirmadas o en progreso
+    if (!['pendiente', 'confirmada', 'en_progreso'].includes(cita.estado)) {
+      return res.status(400).json({ mensaje: 'No se puede reasignar esta cita' });
+    }
+    
+    // Obtener el nuevo especialista
+    const nuevoEspecialista = await Especialista.findById(especialistaId);
+    if (!nuevoEspecialista) {
+      return res.status(404).json({ mensaje: 'Especialista no encontrado' });
+    }
+    
+    if (!nuevoEspecialista.activo) {
+      return res.status(400).json({ mensaje: 'El especialista no está activo' });
+    }
+    
+    // Verificar que el nuevo especialista no tenga conflicto de horario
+    const fechaInicio = new Date(cita.fechaCita);
+    fechaInicio.setHours(0, 0, 0, 0);
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setHours(23, 59, 59, 999);
+    
+    const citasEspecialista = await Cita.find({
+      especialistaId,
+      fechaCita: { $gte: fechaInicio, $lte: fechaFin },
+      estado: { $nin: ['cancelada', 'no_asistio'] },
+      _id: { $ne: cita._id } // Excluir la cita actual
+    });
+    
+    const [horaI, minI] = cita.horaInicio.split(':').map(Number);
+    const inicioCita = horaI * 60 + minI;
+    const finCita = inicioCita + (cita.duracionTotal || 60);
+    
+    const conflicto = citasEspecialista.find(c => {
+      const [hC, mC] = c.horaInicio.split(':').map(Number);
+      const inicioC = hC * 60 + mC;
+      const finC = inicioC + (c.duracionTotal || 60);
+      return (inicioCita < finC && finCita > inicioC);
+    });
+    
+    if (conflicto) {
+      return res.status(400).json({ 
+        mensaje: `${nuevoEspecialista.nombre} ya tiene una cita a las ${conflicto.horaInicio}`,
+        conflicto: {
+          horaInicio: conflicto.horaInicio,
+          cliente: conflicto.nombreCliente
+        }
+      });
+    }
+    
+    // Guardar especialista anterior para el historial
+    const especialistaAnterior = cita.nombreEspecialista;
+    
+    // Actualizar la cita
+    cita.especialistaId = especialistaId;
+    cita.nombreEspecialista = `${nuevoEspecialista.nombre} ${nuevoEspecialista.apellido}`;
+    cita.notasInternas = `${cita.notasInternas || ''}\n[Reasignada de ${especialistaAnterior} a ${cita.nombreEspecialista}]`.trim();
+    
+    await cita.save();
+    
+    // Emitir evento
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('citaReasignada', {
+        cita,
+        especialistaAnterior,
+        especialistaNuevo: cita.nombreEspecialista
+      });
+    }
+    
+    console.log(`✅ Cita ${cita._id} reasignada de ${especialistaAnterior} a ${cita.nombreEspecialista}`);
+    
+    res.json({
+      mensaje: 'Cita reasignada exitosamente',
+      cita,
+      especialistaAnterior,
+      especialistaNuevo: cita.nombreEspecialista
+    });
+    
+  } catch (error) {
+    console.error('Error reasignando cita:', error);
+    res.status(500).json({ mensaje: 'Error al reasignar', error: error.message });
+  }
+});
+
 // POST - Confirmar pago
 router.post('/:id/pago', protegerRuta, async (req, res) => {
   try {

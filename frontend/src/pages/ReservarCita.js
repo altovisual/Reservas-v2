@@ -38,6 +38,9 @@ const ReservarCita = () => {
 
   // Estado para días disponibles
   const [diasDisponibles, setDiasDisponibles] = useState([]);
+  
+  // Disponibilidad de especialistas para hoy/mañana
+  const [disponibilidadEspecialistas, setDisponibilidadEspecialistas] = useState({});
 
   // Cargar horarios configurados y generar días disponibles
   const cargarHorariosYDias = async () => {
@@ -85,8 +88,29 @@ const ReservarCita = () => {
     cargarServicio();
     cargarDatosCliente();
     cargarHorariosYDias();
+    cargarDisponibilidadHoy();
     // eslint-disable-next-line
   }, [servicioId]);
+  
+  // Cargar disponibilidad de hoy para mostrar en la lista de especialistas
+  const cargarDisponibilidadHoy = async () => {
+    try {
+      const hoy = new Date().toISOString().split('T')[0];
+      const response = await api.get(`/horarios/disponibilidad/${hoy}`, {
+        params: { duracion: 60 }
+      });
+      
+      if (response.data.especialistas) {
+        const disponibilidad = {};
+        response.data.especialistas.forEach(esp => {
+          disponibilidad[esp.especialista._id] = esp.horariosDisponibles || 0;
+        });
+        setDisponibilidadEspecialistas(disponibilidad);
+      }
+    } catch (error) {
+      console.log('No se pudo cargar disponibilidad de hoy');
+    }
+  };
 
   // Precargar datos del cliente si está logueado
   const cargarDatosCliente = () => {
@@ -132,54 +156,36 @@ const ReservarCita = () => {
   const cargarDisponibilidad = async () => {
     try {
       const fechaStr = fechaSeleccionada.toISOString().split('T')[0];
+      const duracion = servicio?.duracion || 60;
       
-      // Obtener cupos disponibles del día
-      let horasConCupos = [];
-      try {
-        const cuposResponse = await api.get(`/horarios/cupos/${fechaStr}`);
-        
-        if (cuposResponse.data.disponible && cuposResponse.data.cupos) {
-          horasConCupos = cuposResponse.data.cupos
-            .filter(c => c.estado === 'disponible' && c.disponibles > 0)
-            .map(c => ({ hora: c.hora, disponibles: c.disponibles }));
-        }
-      } catch (err) {
-        console.log('No hay configuración de horarios, usando horarios del especialista');
+      // Usar el nuevo endpoint de disponibilidad por especialista
+      const response = await api.get(`/horarios/disponibilidad/${fechaStr}`, {
+        params: { duracion }
+      });
+      
+      if (!response.data.especialistas) {
+        setHorasDisponibles([]);
+        return;
       }
       
-      // Obtener disponibilidad del especialista
-      try {
-        const response = await api.get(`/especialistas/${especialistaSeleccionado._id}/disponibilidad`, {
-          params: { fecha: fechaStr, duracion: servicio?.duracion || 30 }
-        });
-        
-        const horasEspecialistaRaw = response.data.horasDisponibles || [];
-        // Normalizar: puede ser array de strings o array de objetos {hora, horaFin}
-        const horasEspecialista = horasEspecialistaRaw.map(h => 
-          typeof h === 'string' ? h : (h.hora || h)
-        );
-        
-        // Si hay cupos configurados, combinar ambos
-        if (horasConCupos.length > 0) {
-          const horasCuposStr = horasConCupos.map(h => h.hora);
-          const horasFinales = horasEspecialista
-            .filter(h => horasCuposStr.includes(h))
-            .map(h => ({ hora: h, disponibles: horasConCupos.find(c => c.hora === h)?.disponibles || 1 }));
-          setHorasDisponibles(horasFinales);
-        } else {
-          // Si no hay cupos configurados, usar solo las del especialista
-          setHorasDisponibles(horasEspecialista.map(h => ({ hora: h, disponibles: 1 })));
-        }
-      } catch (err) {
-        // Si falla el especialista, usar solo los cupos
-        if (horasConCupos.length > 0) {
-          setHorasDisponibles(horasConCupos);
-        } else {
-          setHorasDisponibles([]);
-        }
+      // Buscar el especialista seleccionado en la respuesta
+      const espData = response.data.especialistas.find(
+        e => e.especialista._id === especialistaSeleccionado._id
+      );
+      
+      if (espData && espData.horarios) {
+        // Convertir a formato esperado
+        const horas = espData.horarios.map(h => ({
+          hora: h.hora,
+          horaFin: h.horaFin,
+          disponibles: 1
+        }));
+        setHorasDisponibles(horas);
+      } else {
+        setHorasDisponibles([]);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error cargando disponibilidad:', error);
       setHorasDisponibles([]);
     }
   };
@@ -349,15 +355,29 @@ const ReservarCita = () => {
                 >
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold"
                     style={{ backgroundColor: esp.color || '#10B981' }}>
-                    {esp.nombre[0]}
+                    {esp.foto ? (
+                      <img src={esp.foto} alt={esp.nombre} className="w-full h-full object-cover rounded-2xl" />
+                    ) : esp.nombre[0]}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{esp.nombre} {esp.apellido}</h3>
                     <div className="flex items-center gap-1 text-amber-500 text-sm mt-0.5">
                       <Star className="w-4 h-4 fill-current" /> 
                       <span className="font-medium">{esp.calificacionPromedio || 5}</span>
-                      <span className="text-gray-400 ml-1">• {esp.especialidades?.length || 0} especialidades</span>
+                      <span className="text-gray-400 ml-1">• {esp.citasCompletadas || 0} citas</span>
                     </div>
+                    {/* Mostrar disponibilidad de hoy */}
+                    {disponibilidadEspecialistas[esp._id] !== undefined && (
+                      <div className={`text-xs mt-1 flex items-center gap-1 ${
+                        disponibilidadEspecialistas[esp._id] > 0 ? 'text-emerald-600' : 'text-gray-400'
+                      }`}>
+                        <Clock className="w-3 h-3" />
+                        {disponibilidadEspecialistas[esp._id] > 0 
+                          ? `${disponibilidadEspecialistas[esp._id]} horarios hoy`
+                          : 'Sin disponibilidad hoy'
+                        }
+                      </div>
+                    )}
                   </div>
                   <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center">
                     <ChevronRight className="w-5 h-5 text-emerald-500" />
@@ -449,18 +469,25 @@ const ReservarCita = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {horasDisponibles.map((slot, i) => (
                   <button
                     key={i}
                     onClick={() => { setHoraSeleccionada(slot.hora); setPaso(4); }}
-                    className={`p-4 rounded-2xl text-center font-medium transition-all ${
+                    className={`p-4 rounded-2xl text-center transition-all ${
                       horaSeleccionada === slot.hora
                         ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                         : 'bg-white shadow-sm border border-gray-100 hover:border-emerald-200 hover:shadow-md'
                     }`}
                   >
-                    {slot.hora}
+                    <div className="font-bold text-lg">{slot.hora}</div>
+                    {slot.horaFin && (
+                      <div className={`text-xs mt-1 ${
+                        horaSeleccionada === slot.hora ? 'text-emerald-100' : 'text-gray-400'
+                      }`}>
+                        hasta {slot.horaFin}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity } from 'lucide-react';
+import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity, UserSwitch, Users } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
@@ -101,6 +101,13 @@ const GestionCitas = () => {
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [horaActual, setHoraActual] = useState(new Date());
+  
+  // Estados para reasignar especialista
+  const [modalReasignar, setModalReasignar] = useState(false);
+  const [citaAReasignar, setCitaAReasignar] = useState(null);
+  const [especialistas, setEspecialistas] = useState([]);
+  const [especialistaSeleccionado, setEspecialistaSeleccionado] = useState(null);
+  const [reasignando, setReasignando] = useState(false);
 
   // Actualizar hora cada segundo
   useEffect(() => {
@@ -108,6 +115,19 @@ const GestionCitas = () => {
       setHoraActual(new Date());
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+  
+  // Cargar especialistas
+  useEffect(() => {
+    const cargarEspecialistas = async () => {
+      try {
+        const response = await api.get('/especialistas');
+        setEspecialistas(response.data.filter(e => e.activo));
+      } catch (error) {
+        console.error('Error cargando especialistas:', error);
+      }
+    };
+    cargarEspecialistas();
   }, []);
 
   const cargarTodasLasCitas = useCallback(async () => {
@@ -168,6 +188,34 @@ const GestionCitas = () => {
       cargarTodasLasCitas();
     } catch (error) {
       alert('Error');
+    }
+  };
+
+  // Abrir modal de reasignación
+  const abrirModalReasignar = (cita) => {
+    setCitaAReasignar(cita);
+    setEspecialistaSeleccionado(null);
+    setModalReasignar(true);
+  };
+
+  // Reasignar cita a otro especialista
+  const reasignarCita = async () => {
+    if (!especialistaSeleccionado || !citaAReasignar) return;
+    
+    setReasignando(true);
+    try {
+      await api.patch(`/citas/${citaAReasignar._id}/reasignar`, {
+        especialistaId: especialistaSeleccionado._id
+      });
+      
+      setModalReasignar(false);
+      setCitaAReasignar(null);
+      setEspecialistaSeleccionado(null);
+      cargarTodasLasCitas();
+    } catch (error) {
+      alert(error.response?.data?.mensaje || 'Error al reasignar cita');
+    } finally {
+      setReasignando(false);
     }
   };
 
@@ -478,7 +526,7 @@ const GestionCitas = () => {
 
                           {/* Acciones rápidas */}
                           {!['completada', 'cancelada'].includes(cita.estado) && (
-                            <div className="mt-3 flex gap-2">
+                            <div className="mt-3 flex flex-wrap gap-2">
                               {cita.estado === 'pendiente' && (
                                 <button
                                   onClick={() => cambiarEstado(cita._id, 'confirmada')}
@@ -513,6 +561,13 @@ const GestionCitas = () => {
                                   )}
                                 </>
                               )}
+                              {/* Botón reasignar */}
+                              <button
+                                onClick={() => abrirModalReasignar(cita)}
+                                className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-200 flex items-center gap-1"
+                              >
+                                <UserSwitch className="w-3 h-3" /> Reasignar
+                              </button>
                             </div>
                           )}
                         </div>
@@ -953,6 +1008,124 @@ const GestionCitas = () => {
                 className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reasignar Especialista */}
+      {modalReasignar && citaAReasignar && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <UserSwitch className="w-5 h-5 text-emerald-500" />
+                  Reasignar Cita
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {citaAReasignar.nombreCliente} • {citaAReasignar.horaInicio}
+                </p>
+              </div>
+              <button 
+                onClick={() => { setModalReasignar(false); setCitaAReasignar(null); }}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Info actual */}
+            <div className="p-4 bg-gray-50 border-b border-gray-100">
+              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Especialista actual</p>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                  style={{ backgroundColor: citaAReasignar.especialistaId?.color || '#10B981' }}
+                >
+                  {citaAReasignar.nombreEspecialista?.[0] || 'E'}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{citaAReasignar.nombreEspecialista}</p>
+                  <p className="text-sm text-gray-500">
+                    {citaAReasignar.servicios?.map(s => s.nombreServicio).join(', ')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lista de especialistas */}
+            <div className="p-4 overflow-y-auto max-h-[300px]">
+              <p className="text-xs text-gray-500 uppercase font-medium mb-3">Seleccionar nuevo especialista</p>
+              <div className="space-y-2">
+                {especialistas
+                  .filter(esp => esp._id !== citaAReasignar.especialistaId?._id && esp._id !== citaAReasignar.especialistaId)
+                  .map(esp => (
+                    <button
+                      key={esp._id}
+                      onClick={() => setEspecialistaSeleccionado(esp)}
+                      className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${
+                        especialistaSeleccionado?._id === esp._id
+                          ? 'bg-emerald-50 border-2 border-emerald-500'
+                          : 'bg-white border border-gray-200 hover:border-emerald-300'
+                      }`}
+                    >
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                        style={{ backgroundColor: esp.color || '#10B981' }}
+                      >
+                        {esp.foto ? (
+                          <img src={esp.foto} alt={esp.nombre} className="w-full h-full object-cover rounded-full" />
+                        ) : esp.nombre[0]}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium text-gray-900">{esp.nombre} {esp.apellido}</p>
+                        <p className="text-xs text-gray-500">{esp.especialidades?.join(', ') || 'Especialista'}</p>
+                      </div>
+                      {especialistaSeleccionado?._id === esp._id && (
+                        <Check className="w-5 h-5 text-emerald-500" />
+                      )}
+                    </button>
+                  ))}
+              </div>
+              
+              {especialistas.filter(esp => esp._id !== citaAReasignar.especialistaId?._id && esp._id !== citaAReasignar.especialistaId).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                  <p>No hay otros especialistas disponibles</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => { setModalReasignar(false); setCitaAReasignar(null); }}
+                className="flex-1 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={reasignarCita}
+                disabled={!especialistaSeleccionado || reasignando}
+                className={`flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 ${
+                  especialistaSeleccionado && !reasignando
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {reasignando ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Reasignando...
+                  </>
+                ) : (
+                  <>
+                    <UserSwitch className="w-5 h-5" /> Reasignar
+                  </>
+                )}
               </button>
             </div>
           </div>
