@@ -168,3 +168,40 @@ nailspa/
 - `npm start` - Inicia en modo desarrollo
 - `npm run build` - Genera build de producción
 - `npm test` - Ejecuta tests
+
+---
+
+## 🚀 Despliegue en Vercel
+
+### 1. Desplegar Backend
+
+```bash
+cd backend
+vercel
+```
+
+Variables de entorno requeridas en Vercel:
+- `MONGODB_URI` - URL de MongoDB Atlas
+- `JWT_SECRET` - Clave secreta para JWT
+- `CORS_ORIGIN` - URL del frontend (ej: https://nailspa.vercel.app)
+- `CLOUDINARY_CLOUD_NAME` - Cloud name de Cloudinary
+- `CLOUDINARY_API_KEY` - API Key de Cloudinary
+- `CLOUDINARY_API_SECRET` - API Secret de Cloudinary
+
+### 2. Desplegar Frontend
+
+```bash
+cd frontend
+vercel
+```
+
+Variables de entorno requeridas:
+- `REACT_APP_API_URL` - URL del backend (ej: https://nailspa-api.vercel.app/api)
+
+### 3. Configurar MongoDB Atlas
+
+1. Crear cuenta en [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Crear cluster gratuito
+3. Crear usuario de base de datos
+4. Obtener connection string
+5. Agregar IP `0.0.0.0/0` a Network Access

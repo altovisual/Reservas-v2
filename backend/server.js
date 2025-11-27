@@ -91,12 +91,18 @@ app.set('io', io);
 
 const PORT = process.env.PORT || 5001;
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`
+// Solo iniciar servidor si no estamos en Vercel (serverless)
+if (process.env.VERCEL !== '1') {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`
 ╔═══════════════════════════════════════════════╗
 ║   💅 Nail Spa - Sistema de Reservas          ║
 ║   🚀 Servidor corriendo en puerto ${PORT}       ║
 ║   📡 WebSocket habilitado                     ║
 ╚═══════════════════════════════════════════════╝
-  `);
-});
+    `);
+  });
+}
+
+// Exportar para Vercel
+module.exports = app;
