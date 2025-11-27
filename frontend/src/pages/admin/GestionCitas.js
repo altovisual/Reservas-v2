@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle } from 'lucide-react';
+import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
 
@@ -94,12 +94,21 @@ const GestionCitas = () => {
   const [todasLasCitas, setTodasLasCitas] = useState([]);
   const [citasFiltradas, setCitasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [vista, setVista] = useState('lista');
+  const [vista, setVista] = useState('timeline'); // Por defecto timeline
   const [mesActual, setMesActual] = useState(new Date());
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const [horaActual, setHoraActual] = useState(new Date());
+
+  // Actualizar hora cada segundo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHoraActual(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const cargarTodasLasCitas = useCallback(async () => {
     setLoading(true);
@@ -243,6 +252,14 @@ const GestionCitas = () => {
           {/* Toggle vista */}
           <div className="flex gap-2">
             <button
+              onClick={() => setVista('timeline')}
+              className={`px-4 py-3 rounded-xl flex items-center gap-2 transition-colors ${
+                vista === 'timeline' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Activity className="w-5 h-5" /> Timeline
+            </button>
+            <button
               onClick={() => { setVista('lista'); setFechaSeleccionada(null); }}
               className={`px-4 py-3 rounded-xl flex items-center gap-2 transition-colors ${
                 vista === 'lista' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -291,6 +308,231 @@ const GestionCitas = () => {
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+        </div>
+      ) : vista === 'timeline' ? (
+        /* Vista Timeline - Citas de hoy con hora actual */
+        <div className="space-y-4">
+          {/* Header con hora actual */}
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm">Hora actual</p>
+                <p className="text-4xl font-bold font-mono">
+                  {horaActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </p>
+                <p className="text-emerald-100 mt-1">
+                  {horaActual.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl">
+                  <Activity className="w-5 h-5" />
+                  <span className="font-semibold">
+                    {todasLasCitas.filter(c => {
+                      const hoy = new Date().toDateString();
+                      return new Date(c.fechaCita).toDateString() === hoy && c.estado === 'en_progreso';
+                    }).length} en progreso
+                  </span>
+                </div>
+                <p className="text-emerald-100 text-sm mt-2">
+                  {todasLasCitas.filter(c => {
+                    const hoy = new Date().toDateString();
+                    return new Date(c.fechaCita).toDateString() === hoy && ['pendiente', 'confirmada'].includes(c.estado);
+                  }).length} citas pendientes hoy
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline de citas del día */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                <Timer className="w-5 h-5 text-emerald-500" />
+                Timeline de Hoy
+              </h3>
+              <span className="text-sm text-gray-500">
+                Ordenado por hora
+              </span>
+            </div>
+
+            <div className="divide-y divide-gray-100">
+              {(() => {
+                const hoy = new Date().toDateString();
+                const citasHoy = todasLasCitas
+                  .filter(c => new Date(c.fechaCita).toDateString() === hoy)
+                  .sort((a, b) => {
+                    const [hA, mA] = a.horaInicio.split(':').map(Number);
+                    const [hB, mB] = b.horaInicio.split(':').map(Number);
+                    return (hA * 60 + mA) - (hB * 60 + mB);
+                  });
+
+                if (citasHoy.length === 0) {
+                  return (
+                    <div className="p-12 text-center text-gray-500">
+                      <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No hay citas programadas para hoy</p>
+                    </div>
+                  );
+                }
+
+                return citasHoy.map(cita => {
+                  const config = estadoConfig[cita.estado] || estadoConfig.pendiente;
+                  const [horaI, minI] = cita.horaInicio.split(':').map(Number);
+                  const duracion = cita.duracionTotal || 60;
+                  const horaFinMin = horaI * 60 + minI + duracion;
+                  const horaFin = `${Math.floor(horaFinMin / 60).toString().padStart(2, '0')}:${(horaFinMin % 60).toString().padStart(2, '0')}`;
+                  
+                  // Calcular estado temporal
+                  const ahora = horaActual.getHours() * 60 + horaActual.getMinutes();
+                  const inicioMin = horaI * 60 + minI;
+                  const finMin = horaFinMin;
+                  
+                  let estadoTemporal = 'pendiente';
+                  let tiempoInfo = '';
+                  let tiempoColor = 'text-gray-500';
+                  
+                  if (cita.estado === 'completada' || cita.estado === 'cancelada') {
+                    estadoTemporal = cita.estado;
+                    tiempoInfo = cita.estado === 'completada' ? 'Finalizada' : 'Cancelada';
+                  } else if (ahora < inicioMin) {
+                    const faltan = inicioMin - ahora;
+                    tiempoInfo = `Inicia en ${faltan} min`;
+                    tiempoColor = faltan <= 15 ? 'text-amber-600' : 'text-blue-600';
+                    estadoTemporal = 'proximo';
+                  } else if (ahora >= inicioMin && ahora < finMin) {
+                    const transcurrido = ahora - inicioMin;
+                    const restante = finMin - ahora;
+                    tiempoInfo = `${transcurrido} min transcurridos • ${restante} min restantes`;
+                    tiempoColor = 'text-purple-600';
+                    estadoTemporal = 'en_curso';
+                  } else {
+                    const retraso = ahora - finMin;
+                    tiempoInfo = `Debió terminar hace ${retraso} min`;
+                    tiempoColor = 'text-red-600';
+                    estadoTemporal = 'retrasada';
+                  }
+
+                  return (
+                    <div 
+                      key={cita._id}
+                      className={`p-4 hover:bg-gray-50 transition-colors ${
+                        estadoTemporal === 'en_curso' ? 'bg-purple-50 border-l-4 border-purple-500' :
+                        estadoTemporal === 'retrasada' ? 'bg-red-50 border-l-4 border-red-500' :
+                        estadoTemporal === 'proximo' && tiempoColor === 'text-amber-600' ? 'bg-amber-50 border-l-4 border-amber-500' :
+                        ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Hora */}
+                        <div className="text-center min-w-[80px]">
+                          <p className="text-2xl font-bold text-gray-900">{cita.horaInicio}</p>
+                          <p className="text-xs text-gray-500">hasta {horaFin}</p>
+                          <div className="mt-1 px-2 py-1 bg-gray-100 rounded text-xs font-medium">
+                            {duracion} min
+                          </div>
+                        </div>
+
+                        {/* Línea de tiempo visual */}
+                        <div className="flex flex-col items-center">
+                          <div className={`w-4 h-4 rounded-full ${config.dotColor}`}></div>
+                          <div className="w-0.5 h-full bg-gray-200 my-1"></div>
+                        </div>
+
+                        {/* Info de la cita */}
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{cita.nombreCliente}</h4>
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                <Scissors className="w-3 h-3" />
+                                {cita.servicios?.map(s => s.nombreServicio).join(', ')}
+                              </p>
+                              <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                                <User className="w-3 h-3" />
+                                {cita.nombreEspecialista}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${config.color}`}>
+                              {config.label}
+                            </span>
+                          </div>
+
+                          {/* Tiempo info */}
+                          <div className={`mt-2 flex items-center gap-2 ${tiempoColor} text-sm font-medium`}>
+                            <Clock className="w-4 h-4" />
+                            {tiempoInfo}
+                          </div>
+
+                          {/* Barra de progreso para citas en curso */}
+                          {estadoTemporal === 'en_curso' && (
+                            <div className="mt-2">
+                              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-purple-500 transition-all duration-1000"
+                                  style={{ width: `${Math.min(100, ((ahora - inicioMin) / duracion) * 100)}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Acciones rápidas */}
+                          {!['completada', 'cancelada'].includes(cita.estado) && (
+                            <div className="mt-3 flex gap-2">
+                              {cita.estado === 'pendiente' && (
+                                <button
+                                  onClick={() => cambiarEstado(cita._id, 'confirmada')}
+                                  className="px-3 py-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-200 flex items-center gap-1"
+                                >
+                                  <Check className="w-3 h-3" /> Confirmar
+                                </button>
+                              )}
+                              {cita.estado === 'confirmada' && (
+                                <button
+                                  onClick={() => cambiarEstado(cita._id, 'en_progreso')}
+                                  className="px-3 py-1.5 bg-purple-100 text-purple-600 rounded-lg text-xs font-medium hover:bg-purple-200 flex items-center gap-1"
+                                >
+                                  <Play className="w-3 h-3" /> Iniciar
+                                </button>
+                              )}
+                              {cita.estado === 'en_progreso' && (
+                                <>
+                                  <button
+                                    onClick={() => cambiarEstado(cita._id, 'completada')}
+                                    className="px-3 py-1.5 bg-emerald-100 text-emerald-600 rounded-lg text-xs font-medium hover:bg-emerald-200 flex items-center gap-1"
+                                  >
+                                    <Check className="w-3 h-3" /> Completar
+                                  </button>
+                                  {!cita.pagado && (
+                                    <button
+                                      onClick={() => confirmarPago(cita._id)}
+                                      className="px-3 py-1.5 bg-amber-100 text-amber-600 rounded-lg text-xs font-medium hover:bg-amber-200 flex items-center gap-1"
+                                    >
+                                      <DollarSign className="w-3 h-3" /> Cobrar ${cita.total}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Total */}
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-emerald-600">${cita.total}</p>
+                          {cita.pagado && (
+                            <span className="text-xs text-emerald-500 flex items-center gap-1 justify-end">
+                              <Check className="w-3 h-3" /> Pagado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
         </div>
       ) : vista === 'calendario' ? (
         /* Vista Calendario */
