@@ -158,14 +158,6 @@ export const NotificationProvider = ({ children }) => {
     // Remover /api si existe
     SOCKET_URL = SOCKET_URL.replace('/api', '');
     
-    // Vercel no soporta WebSockets - desactivar en producción
-    const isProduction = SOCKET_URL.includes('vercel.app');
-    if (isProduction) {
-      console.log('⚠️ WebSockets desactivados en producción (Vercel no los soporta)');
-      setIsConnected(false);
-      return;
-    }
-    
     console.log('🔌 Intentando conectar Socket.IO a:', SOCKET_URL);
 
     socketRef.current = io(SOCKET_URL, {
