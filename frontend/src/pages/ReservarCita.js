@@ -300,7 +300,10 @@ const ReservarCita = () => {
           <span className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full text-sm">
             <Clock className="w-4 h-4" /> {servicio?.duracion} min
           </span>
-          <span className="font-bold text-lg">${servicio?.precio}</span>
+          <div className="text-right">
+            <span className="font-bold text-lg">${servicio?.precio}</span>
+            {tasa && <span className="text-sm opacity-80 ml-1">({formatearBs(servicio?.precio)})</span>}
+          </div>
         </div>
       </div>
 
@@ -659,7 +662,8 @@ const ReservarCita = () => {
                   <div>
                     <h3 className="font-semibold text-amber-800">Pago en el local</h3>
                     <p className="text-sm text-amber-700 mt-1">
-                      Pagarás <span className="font-bold">${servicio?.precio}</span> al momento de tu cita. 
+                      Pagarás <span className="font-bold">${servicio?.precio}</span>
+                      {tasa && <span className="font-bold"> ({formatearBs(servicio?.precio)})</span>} al momento de tu cita. 
                       Aceptamos efectivo en Bolívares o Dólares.
                     </p>
                     <p className="text-xs text-amber-600 mt-2">
@@ -706,7 +710,10 @@ const ReservarCita = () => {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
                     <span className="text-gray-600">Monto:</span>
-                    <span className="font-bold text-emerald-600 text-lg">${servicio?.precio}</span>
+                    <div className="text-right">
+                      <span className="font-bold text-emerald-600 text-lg">${servicio?.precio}</span>
+                      {tasa && <p className="text-xs text-emerald-500">{formatearBs(servicio?.precio)}</p>}
+                    </div>
                   </div>
                 </div>
                 
@@ -753,7 +760,10 @@ const ReservarCita = () => {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-emerald-200">
                     <span className="text-gray-600">Monto:</span>
-                    <span className="font-bold text-emerald-600 text-lg">${servicio?.precio}</span>
+                    <div className="text-right">
+                      <span className="font-bold text-emerald-600 text-lg">${servicio?.precio}</span>
+                      {tasa && <p className="text-xs text-emerald-500">{formatearBs(servicio?.precio)}</p>}
+                    </div>
                   </div>
                 </div>
                 

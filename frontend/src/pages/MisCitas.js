@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Clock, User, Star, CheckCircle, XCircle, AlertCircle, ArrowLeft, MessageSquare, AlertTriangle, X, MapPin, Phone, DollarSign, Scissors, RefreshCw } from 'lucide-react';
 import api from '../services/api';
+import { useTasaBcv } from '../context/TasaBcvContext';
 
 const estadoConfig = {
   pendiente: { color: 'bg-amber-50 text-amber-600 border-amber-200', icon: AlertCircle, texto: 'Pendiente', descripcion: 'Esperando confirmación' },
@@ -15,6 +16,7 @@ const MisCitas = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const modalRef = useRef(null);
+  const { tasa, formatearBs } = useTasaBcv();
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState(location.state?.mensaje || null);
@@ -244,6 +246,7 @@ const MisCitas = () => {
                     <div className="ml-auto text-right">
                       <p className="text-xs text-gray-400">Total</p>
                       <p className="text-lg font-bold text-emerald-600">${cita.total}</p>
+                      {tasa && <p className="text-xs text-gray-400">{formatearBs(cita.total)}</p>}
                     </div>
                   </div>
 
@@ -481,7 +484,10 @@ const MisCitas = () => {
                     <DollarSign className="w-5 h-5" />
                     <span className="font-medium">Total a pagar</span>
                   </div>
-                  <span className="text-2xl font-bold text-emerald-600">${modalDetalle.total}</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-emerald-600">${modalDetalle.total}</span>
+                    {tasa && <p className="text-sm text-emerald-600">{formatearBs(modalDetalle.total)}</p>}
+                  </div>
                 </div>
               </div>
 
