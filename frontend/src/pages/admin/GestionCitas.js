@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { User, Phone, Check, X, Play, RefreshCw, DollarSign, Calendar, Search, ChevronLeft, ChevronRight, List, CalendarDays, Clock, Scissors, FileText, CreditCard, AlertTriangle, Timer, Activity, ArrowRightLeft, Users } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
+import { useTasaBcv } from '../../context/TasaBcvContext';
 
 // Componente para mostrar el contador de retraso
 const ContadorRetraso = ({ fechaCita, horaInicio, estado }) => {
@@ -91,6 +92,7 @@ const estadoConfig = {
 };
 
 const GestionCitas = () => {
+  const { tasa, formatearBs } = useTasaBcv();
   const [todasLasCitas, setTodasLasCitas] = useState([]);
   const [citasFiltradas, setCitasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -575,6 +577,7 @@ const GestionCitas = () => {
                         {/* Total */}
                         <div className="text-right">
                           <p className="text-lg font-bold text-emerald-600">${cita.total}</p>
+                          {tasa && <p className="text-xs text-gray-400">{formatearBs(cita.total)}</p>}
                           {cita.pagado && (
                             <span className="text-xs text-emerald-500 flex items-center gap-1 justify-end">
                               <Check className="w-3 h-3" /> Pagado
@@ -714,6 +717,7 @@ const GestionCitas = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-xl font-bold text-gray-900">${cita.total}</p>
+                          {tasa && <p className="text-xs text-gray-400">{formatearBs(cita.total)}</p>}
                           {cita.pagado ? (
                             <span className="text-xs text-emerald-600 font-medium">✓ Pagado</span>
                           ) : (

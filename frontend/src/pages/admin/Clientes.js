@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
+import { useTasaBcv } from '../../context/TasaBcvContext';
 
 const Clientes = () => {
+  const { tasa, formatearBs } = useTasaBcv();
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
@@ -187,6 +189,7 @@ const Clientes = () => {
               <p className="text-2xl font-bold text-gray-900">
                 ${clientes.reduce((sum, c) => sum + c.totalGastado, 0).toLocaleString()}
               </p>
+              {tasa && <p className="text-xs text-gray-400">{formatearBs(clientes.reduce((sum, c) => sum + c.totalGastado, 0))}</p>}
               <p className="text-sm text-gray-500">Total ingresos</p>
             </div>
           </div>
@@ -227,6 +230,7 @@ const Clientes = () => {
                       <div className="text-right hidden sm:block">
                         <p className="text-sm font-medium text-gray-900">{cliente.totalCitas} citas</p>
                         <p className="text-xs text-gray-500">${cliente.totalGastado.toLocaleString()}</p>
+                        {tasa && <p className="text-xs text-gray-400">{formatearBs(cliente.totalGastado)}</p>}
                       </div>
                       <ChevronRight className="w-5 h-5 text-gray-300" />
                     </div>
@@ -320,6 +324,7 @@ const Clientes = () => {
                   </div>
                   <div className="text-center p-3 bg-emerald-50 rounded-xl">
                     <p className="text-2xl font-bold text-emerald-600">${clienteSeleccionado.totalGastado.toLocaleString()}</p>
+                    {tasa && <p className="text-xs text-emerald-500">{formatearBs(clienteSeleccionado.totalGastado)}</p>}
                     <p className="text-xs text-gray-500">Total gastado</p>
                   </div>
                   <div className="text-center p-3 bg-amber-50 rounded-xl">

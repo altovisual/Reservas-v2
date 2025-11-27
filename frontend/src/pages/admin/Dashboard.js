@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Clock, DollarSign, ChevronRight, TrendingUp, Link2, Copy, Check, Share2, ExternalLink, RefreshCw, X, User, Phone, Scissors, CreditCard } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTasaBcv } from '../../context/TasaBcvContext';
 import api from '../../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { notifications, isConnected } = useNotifications();
+  const { tasa, formatearBs } = useTasaBcv();
   const [stats, setStats] = useState(null);
   const [citasHoy, setCitasHoy] = useState([]);
   const [copied, setCopied] = useState(false);
@@ -245,6 +247,9 @@ const Dashboard = () => {
             <p className="text-2xl font-bold text-gray-900">
               ${stats?.total > 0 ? Math.round((stats?.ingresos || 0) / stats.total) : 0}
             </p>
+            {tasa && stats?.total > 0 && (
+              <p className="text-xs text-gray-400">{formatearBs(Math.round((stats?.ingresos || 0) / stats.total))}</p>
+            )}
             <p className="text-gray-500 text-sm mt-1">Por cita</p>
           </div>
         </div>
@@ -358,9 +363,14 @@ const Dashboard = () => {
                     ))}
                     <div className="flex justify-between pt-2 border-t border-purple-200">
                       <span className="font-semibold text-purple-900">Total:</span>
-                      <span className="font-bold text-purple-900">
-                        ${citaSeleccionada.servicios.reduce((sum, s) => sum + (s.precio || 0), 0)}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-bold text-purple-900">
+                          ${citaSeleccionada.servicios.reduce((sum, s) => sum + (s.precio || 0), 0)}
+                        </span>
+                        {tasa && (
+                          <p className="text-xs text-purple-600">{formatearBs(citaSeleccionada.servicios.reduce((sum, s) => sum + (s.precio || 0), 0))}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -386,9 +396,16 @@ const Dashboard = () => {
                   <span className={`font-medium ${citaSeleccionada.pagado ? 'text-emerald-900' : 'text-amber-900'}`}>
                     {citaSeleccionada.pagado ? '✓ Pagado' : 'Pendiente'}
                   </span>
-                  <span className={`text-xl font-bold ${citaSeleccionada.pagado ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    ${citaSeleccionada.total || citaSeleccionada.servicios?.reduce((sum, s) => sum + (s.precio || 0), 0) || 0}
-                  </span>
+                  <div className="text-right">
+                    <span className={`text-xl font-bold ${citaSeleccionada.pagado ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      ${citaSeleccionada.total || citaSeleccionada.servicios?.reduce((sum, s) => sum + (s.precio || 0), 0) || 0}
+                    </span>
+                    {tasa && (
+                      <p className={`text-xs ${citaSeleccionada.pagado ? 'text-emerald-500' : 'text-amber-500'}`}>
+                        {formatearBs(citaSeleccionada.total || citaSeleccionada.servicios?.reduce((sum, s) => sum + (s.precio || 0), 0) || 0)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

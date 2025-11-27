@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { CreditCard, Search, CheckCircle, XCircle, Clock, Eye, Smartphone, Building, DollarSign, TrendingUp, Plus, X, Calendar, Scissors, UserCircle } from 'lucide-react';
 import api from '../../services/api';
+import { useTasaBcv } from '../../context/TasaBcvContext';
 
 const metodosConfig = {
   pago_movil: { label: 'Pago Móvil', icon: Smartphone, color: 'text-blue-600 bg-blue-50' },
@@ -20,6 +21,7 @@ const estadosConfig = {
 };
 
 const Pagos = () => {
+  const { tasa, formatearBs } = useTasaBcv();
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('');
@@ -170,6 +172,7 @@ const Pagos = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">${resumen.hoy?.total || 0}</p>
+              {tasa && <p className="text-xs text-gray-400">{formatearBs(resumen.hoy?.total || 0)}</p>}
               <p className="text-sm text-gray-500">Hoy</p>
             </div>
           </div>
@@ -181,6 +184,7 @@ const Pagos = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">${resumen.mes?.total || 0}</p>
+              {tasa && <p className="text-xs text-gray-400">{formatearBs(resumen.mes?.total || 0)}</p>}
               <p className="text-sm text-gray-500">Este mes</p>
             </div>
           </div>

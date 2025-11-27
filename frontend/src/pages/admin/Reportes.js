@@ -12,8 +12,10 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import api from '../../services/api';
+import { useTasaBcv } from '../../context/TasaBcvContext';
 
 const Reportes = () => {
+  const { tasa, formatearBs } = useTasaBcv();
   const [periodo, setPeriodo] = useState('semana');
   const [loading, setLoading] = useState(true);
   const [reportes, setReportes] = useState({
@@ -150,6 +152,7 @@ const Reportes = () => {
             </span>
           </div>
           <p className="text-3xl font-bold text-gray-900">${reportes.ingresos.total.toLocaleString()}</p>
+          {tasa && <p className="text-sm text-gray-400">{formatearBs(reportes.ingresos.total)}</p>}
           <p className="text-gray-500 text-sm mt-1">Ingresos totales</p>
         </div>
 
