@@ -19,7 +19,6 @@ const Servicios = () => {
   const [galeria, setGaleria] = useState([]);
   const [resenas, setResenas] = useState([]);
   const [cliente, setCliente] = useState(null);
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   
   useEffect(() => {
     const clienteData = localStorage.getItem('clienteData');
@@ -28,36 +27,6 @@ const Servicios = () => {
     }
   }, []);
 
-  // Estado para progreso de scroll (0 a 1)
-  const [scrollProgress, setScrollProgress] = useState(0);
-  
-  // Detectar scroll con progreso suave
-  useEffect(() => {
-    let ticking = false;
-    
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollY = window.scrollY;
-          // Calcular progreso: 0 = arriba, 1 = colapsado (después de 150px)
-          const progress = Math.min(scrollY / 150, 1);
-          setScrollProgress(progress);
-          
-          // Solo cambiar estado cuando cruza umbrales claros
-          if (progress >= 0.9 && !headerCollapsed) {
-            setHeaderCollapsed(true);
-          } else if (progress <= 0.1 && headerCollapsed) {
-            setHeaderCollapsed(false);
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [headerCollapsed]);
   
   useEffect(() => {
     cargarDatos();
@@ -122,91 +91,79 @@ const Servicios = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
-      {/* Header Sticky con animación suave proporcional al scroll */}
-      <div className={`sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 text-white ${scrollProgress > 0.5 ? 'shadow-lg' : ''}`}>
-        
-        {/* Contenido colapsable con animación proporcional al scroll */}
-        <div 
-          className="overflow-hidden"
-          style={{ 
-            maxHeight: `${Math.max(0, 300 * (1 - scrollProgress))}px`,
-            opacity: 1 - scrollProgress,
-            transform: `translateY(${-10 * scrollProgress}px)`,
-            transition: 'none'
-          }}
-        >
-          <div>
-            <div className="px-4 pt-6 pb-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <Sparkles className="w-6 h-6" /> {cliente ? `Hola, ${cliente.nombre}` : 'Nail Spa'}
-                  </h1>
-                  <p className="text-emerald-100 text-sm mt-1">
-                    {cliente ? 'Bienvenida a tu destino de belleza ✨' : 'Tu destino de belleza'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigate('/mis-citas')}
-                    className="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition-colors"
-                  >
-                    <Calendar className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setMenuOpen(true)}
-                    className="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition-colors"
-                  >
-                    <Menu className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+      {/* Header NO sticky - se va con el scroll */}
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+        <div className="px-4 pt-6 pb-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <Sparkles className="w-6 h-6" /> {cliente ? `Hola, ${cliente.nombre}` : 'Nail Spa'}
+              </h1>
+              <p className="text-emerald-100 text-sm mt-1">
+                {cliente ? 'Bienvenida a tu destino de belleza ✨' : 'Tu destino de belleza'}
+              </p>
             </div>
-
-            {/* Hero Stats Cards */}
-            <div className="px-4 pb-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
-                  <Star className="w-5 h-5 mx-auto mb-1 fill-current" />
-                  <p className="text-lg font-bold">{promedioCalificacion}</p>
-                  <p className="text-xs text-emerald-100">Rating</p>
-                </div>
-                <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
-                  <Users className="w-5 h-5 mx-auto mb-1" />
-                  <p className="text-lg font-bold">500+</p>
-                  <p className="text-xs text-emerald-100">Clientes</p>
-                </div>
-                <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
-                  <Gift className="w-5 h-5 mx-auto mb-1" />
-                  <p className="text-lg font-bold">10%</p>
-                  <p className="text-xs text-emerald-100">Puntos</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Banner de Promociones */}
-            <div className="px-4 pb-4">
-              <div className="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-4 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8"></div>
-                <div className="absolute right-8 bottom-0 w-16 h-16 bg-white/10 rounded-full -mb-6"></div>
-                <div className="relative z-10">
-                  <span className="bg-white/20 text-white text-xs font-bold px-2 py-1 rounded-full">🔥 OFERTA</span>
-                  <h3 className="text-white font-bold text-lg mt-2">¡20% OFF en tu primera cita!</h3>
-                  <p className="text-white/90 text-sm mt-1">Usa el código: BIENVENIDA</p>
-                  <button 
-                    onClick={() => navigate('/reservar')}
-                    className="mt-3 bg-white text-orange-600 font-semibold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors"
-                  >
-                    Reservar ahora
-                  </button>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate('/mis-citas')}
+                className="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition-colors"
+              >
+                <Calendar className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Búsqueda - siempre visible */}
-        <div className={`px-4 transition-all duration-300 ${headerCollapsed ? 'py-3' : 'pb-4'}`}>
+        {/* Hero Stats Cards */}
+        <div className="px-4 pb-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
+              <Star className="w-5 h-5 mx-auto mb-1 fill-current" />
+              <p className="text-lg font-bold">{promedioCalificacion}</p>
+              <p className="text-xs text-emerald-100">Rating</p>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
+              <Users className="w-5 h-5 mx-auto mb-1" />
+              <p className="text-lg font-bold">500+</p>
+              <p className="text-xs text-emerald-100">Clientes</p>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
+              <Gift className="w-5 h-5 mx-auto mb-1" />
+              <p className="text-lg font-bold">10%</p>
+              <p className="text-xs text-emerald-100">Puntos</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Banner de Promociones */}
+        <div className="px-4 pb-4">
+          <div className="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-4 relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="absolute right-8 bottom-0 w-16 h-16 bg-white/10 rounded-full -mb-6"></div>
+            <div className="relative z-10">
+              <span className="bg-white/20 text-white text-xs font-bold px-2 py-1 rounded-full">🔥 OFERTA</span>
+              <h3 className="text-white font-bold text-lg mt-2">¡20% OFF en tu primera cita!</h3>
+              <p className="text-white/90 text-sm mt-1">Usa el código: BIENVENIDA</p>
+              <button 
+                onClick={() => navigate('/reservar')}
+                className="mt-3 bg-white text-orange-600 font-semibold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors"
+              >
+                Reservar ahora
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Búsqueda y Categorías - STICKY */}
+      <div className="sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
+        <div className="px-4 py-3">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
