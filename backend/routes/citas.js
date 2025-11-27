@@ -129,11 +129,11 @@ router.get('/:id', async (req, res) => {
 // POST - Crear cita
 router.post('/', async (req, res) => {
   try {
-    const { servicios, especialistaId, clienteId, fechaCita, ...citaData } = req.body;
+    const { servicios, especialistaId, clienteId, fechaCita, horaInicio, ...citaData } = req.body;
 
-    console.log('Creando cita:', { fechaCita, especialistaId, clienteId });
+    console.log('Creando cita:', { fechaCita, horaInicio, especialistaId, clienteId });
 
-    // Obtener info de servicios
+    // Obtener info de servicios y calcular duración total
     const serviciosInfo = await Promise.all(
       servicios.map(async (s) => {
         const servicio = await Servicio.findById(s.servicioId);
@@ -145,9 +145,50 @@ router.post('/', async (req, res) => {
         };
       })
     );
+    
+    const duracionTotal = serviciosInfo.reduce((sum, s) => sum + (s.duracion || 30), 0);
 
     // Obtener nombre del especialista
     const especialista = await Especialista.findById(especialistaId);
+    
+    // ===== VALIDACIÓN DE CONFLICTOS =====
+    // Verificar que el especialista no tenga otra cita en ese horario
+    const fechaInicio = new Date(fechaCita + 'T00:00:00');
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setHours(23, 59, 59, 999);
+    
+    const citasEspecialista = await Cita.find({
+      especialistaId,
+      fechaCita: { $gte: fechaInicio, $lte: fechaFin },
+      estado: { $nin: ['cancelada', 'no_asistio'] }
+    });
+    
+    // Calcular minutos de la nueva cita
+    const [horaI, minI] = horaInicio.split(':').map(Number);
+    const inicioNuevaCita = horaI * 60 + minI;
+    const finNuevaCita = inicioNuevaCita + duracionTotal;
+    
+    // Buscar conflictos
+    const conflicto = citasEspecialista.find(cita => {
+      const [hCita, mCita] = cita.horaInicio.split(':').map(Number);
+      const inicioCitaExistente = hCita * 60 + mCita;
+      const finCitaExistente = inicioCitaExistente + (cita.duracionTotal || 60);
+      
+      // Hay conflicto si los rangos se superponen
+      return (inicioNuevaCita < finCitaExistente && finNuevaCita > inicioCitaExistente);
+    });
+    
+    if (conflicto) {
+      return res.status(400).json({ 
+        mensaje: `El especialista ya tiene una cita a las ${conflicto.horaInicio}`,
+        conflicto: {
+          horaInicio: conflicto.horaInicio,
+          cliente: conflicto.nombreCliente,
+          servicio: conflicto.servicios?.[0]?.nombreServicio
+        }
+      });
+    }
+    // ===== FIN VALIDACIÓN =====
 
     // Parsear la fecha correctamente
     let fechaCitaParsed;
@@ -166,11 +207,13 @@ router.post('/', async (req, res) => {
     // Preparar datos de la cita
     const datosCita = {
       ...citaData,
+      horaInicio,
       fechaCita: fechaCitaParsed,
       clienteId: clienteId,
       servicios: serviciosInfo,
       especialistaId,
-      nombreEspecialista: `${especialista.nombre} ${especialista.apellido}`
+      nombreEspecialista: `${especialista.nombre} ${especialista.apellido}`,
+      duracionTotal
     };
 
     // Si el clienteId es un ObjectId válido de MongoDB, también guardarlo en cliente
