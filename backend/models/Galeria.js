@@ -8,8 +8,9 @@ const galeriaSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['Manicure', 'Pedicure', 'Uñas Acrílicas', 'Uñas en Gel', 'Nail Art', 
-           'French', 'Diseños', 'Depilación', 'Cejas y Pestañas', 'Maquillaje',
-           'Tratamientos Faciales', 'Masajes', 'Spa', 'Otros']
+           'French', 'Diseños', 'Diseños 3D', 'Temporada', 'Depilación', 
+           'Cejas y Pestañas', 'Maquillaje', 'Tratamientos Faciales', 
+           'Masajes', 'Spa', 'Otros']
   },
   likes: { type: Number, default: 0 },
   likedBy: [{ type: String }], // IDs de clientes que dieron like
