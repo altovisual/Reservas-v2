@@ -72,9 +72,9 @@ const ClienteAuth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] page-container">
+    <div className="min-h-screen bg-cream page-container">
       {/* Header */}
-      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 text-white px-4 pt-12 pb-8">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-500 to-teal-600 text-white px-4 pt-12 pb-8">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <img src="/logo.png" alt="Lwise Spa" className="w-12 h-12 rounded-xl" />
@@ -88,12 +88,12 @@ const ClienteAuth = () => {
       <div className="px-4 -mt-4">
         <div className="bg-white rounded-3xl shadow-xl p-6">
           {/* Tabs */}
-          <div className="flex bg-gray-100 rounded-2xl p-1 mb-6">
+          <div className="flex bg-ivory-100 rounded-2xl p-1 mb-6">
             <button
               onClick={() => setModo('login')}
               className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
                 modo === 'login' 
-                  ? 'bg-white shadow text-emerald-600' 
+                  ? 'bg-white shadow text-brand-600' 
                   : 'text-gray-500'
               }`}
             >
@@ -103,7 +103,7 @@ const ClienteAuth = () => {
               onClick={() => setModo('registro')}
               className={`flex-1 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
                 modo === 'registro' 
-                  ? 'bg-white shadow text-emerald-600' 
+                  ? 'bg-white shadow text-brand-600' 
                   : 'text-gray-500'
               }`}
             >
@@ -130,7 +130,7 @@ const ClienteAuth = () => {
                   <select
                     value={formLogin.tipoCedula}
                     onChange={(e) => setFormLogin({...formLogin, tipoCedula: e.target.value})}
-                    className="w-20 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-20 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     <option value="V">V</option>
                     <option value="E">E</option>
@@ -143,7 +143,7 @@ const ClienteAuth = () => {
                       type="text"
                       value={formLogin.cedula}
                       onChange={(e) => setFormLogin({...formLogin, cedula: e.target.value.replace(/\D/g, '')})}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder="12345678"
                       required
                     />
@@ -154,7 +154,7 @@ const ClienteAuth = () => {
               <button
                 type="submit"
                 disabled={loading || !formLogin.cedula}
-                className="w-full py-4 bg-emerald-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                className="w-full py-4 bg-brand-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-brand-600 transition-colors disabled:opacity-50"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -181,7 +181,7 @@ const ClienteAuth = () => {
                   <select
                     value={formRegistro.tipoCedula}
                     onChange={(e) => setFormRegistro({...formRegistro, tipoCedula: e.target.value})}
-                    className="w-20 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-20 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                   >
                     <option value="V">V</option>
                     <option value="E">E</option>
@@ -192,7 +192,7 @@ const ClienteAuth = () => {
                     type="text"
                     value={formRegistro.cedula}
                     onChange={(e) => setFormRegistro({...formRegistro, cedula: e.target.value.replace(/\D/g, '')})}
-                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="12345678"
                     required
                   />
@@ -209,7 +209,7 @@ const ClienteAuth = () => {
                       type="text"
                       value={formRegistro.nombre}
                       onChange={(e) => setFormRegistro({...formRegistro, nombre: e.target.value})}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                       placeholder="Nombre"
                       required
                     />
@@ -221,7 +221,7 @@ const ClienteAuth = () => {
                     type="text"
                     value={formRegistro.apellido}
                     onChange={(e) => setFormRegistro({...formRegistro, apellido: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="Apellido"
                   />
                 </div>
@@ -236,7 +236,7 @@ const ClienteAuth = () => {
                     type="tel"
                     value={formRegistro.telefono}
                     onChange={(e) => setFormRegistro({...formRegistro, telefono: e.target.value})}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="0424-1234567"
                     required
                   />
@@ -252,7 +252,7 @@ const ClienteAuth = () => {
                     type="email"
                     value={formRegistro.email}
                     onChange={(e) => setFormRegistro({...formRegistro, email: e.target.value})}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                     placeholder="correo@email.com"
                   />
                 </div>
@@ -267,7 +267,7 @@ const ClienteAuth = () => {
                     type="date"
                     value={formRegistro.fechaNacimiento}
                     onChange={(e) => setFormRegistro({...formRegistro, fechaNacimiento: e.target.value})}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Te enviaremos un regalo especial 🎁</p>
@@ -276,7 +276,7 @@ const ClienteAuth = () => {
               <button
                 type="submit"
                 disabled={loading || !formRegistro.cedula || !formRegistro.nombre || !formRegistro.telefono}
-                className="w-full py-4 bg-emerald-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                className="w-full py-4 bg-brand-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-brand-600 transition-colors disabled:opacity-50"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -295,12 +295,12 @@ const ClienteAuth = () => {
           <h3 className="text-center text-gray-500 text-sm font-medium">Beneficios de registrarte</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white rounded-2xl p-4 text-center">
-              <Gift className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <Gift className="w-8 h-8 text-gold-500 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-800">Acumula Puntos</p>
               <p className="text-xs text-gray-500">10% en cada servicio</p>
             </div>
             <div className="bg-white rounded-2xl p-4 text-center">
-              <Calendar className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <Calendar className="w-8 h-8 text-brand-500 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-800">Historial</p>
               <p className="text-xs text-gray-500">Tus citas guardadas</p>
             </div>

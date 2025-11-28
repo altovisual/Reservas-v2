@@ -43,8 +43,8 @@ const BottomNav = () => {
               onClick={() => handleNavigate(item.path)}
               className={`relative flex flex-col items-center gap-0.5 py-2 px-4 rounded-2xl transition-all duration-300 ease-out ${
                 active 
-                  ? 'text-emerald-600 bg-emerald-50' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                  ? 'text-brand-600 bg-brand-50' 
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-ivory-100'
               }`}
             >
               <Icon className={`w-5 h-5 transition-all duration-300 ${active ? 'scale-110' : 'scale-100'}`} />

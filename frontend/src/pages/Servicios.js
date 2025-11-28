@@ -85,23 +85,23 @@ const Servicios = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
-        <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="animate-spin w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
+    <div className="min-h-screen bg-cream pb-24 page-container">
       {/* Header NO sticky - se va con el scroll */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-500 to-teal-600 text-white">
         <div className="px-4 pt-6 pb-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <img src="/logo.png" alt="Lwise Spa" className="w-8 h-8 rounded-lg" /> {cliente ? `Hola, ${cliente.nombre}` : 'Lwise Spa'}
               </h1>
-              <p className="text-emerald-100 text-sm mt-1">
+              <p className="text-brand-100 text-sm mt-1">
                 {cliente ? 'Bienvenida a tu destino de belleza ✨' : 'Tu destino de belleza'}
               </p>
             </div>
@@ -128,24 +128,24 @@ const Servicios = () => {
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
               <Star className="w-5 h-5 mx-auto mb-1 fill-current" />
               <p className="text-lg font-bold">{promedioCalificacion}</p>
-              <p className="text-xs text-emerald-100">Rating</p>
+              <p className="text-xs text-ivory-200">Rating</p>
             </div>
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
               <Users className="w-5 h-5 mx-auto mb-1" />
               <p className="text-lg font-bold">500+</p>
-              <p className="text-xs text-emerald-100">Clientes</p>
+              <p className="text-xs text-ivory-200">Clientes</p>
             </div>
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-3 text-center">
               <Gift className="w-5 h-5 mx-auto mb-1" />
               <p className="text-lg font-bold">10%</p>
-              <p className="text-xs text-emerald-100">Puntos</p>
+              <p className="text-xs text-ivory-200">Puntos</p>
             </div>
           </div>
         </div>
 
         {/* Banner de Promociones */}
         <div className="px-4 pb-4">
-          <div className="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-4 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-gold-400 to-gold-500 rounded-2xl p-4 relative overflow-hidden shadow-lg">
             <div className="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8"></div>
             <div className="absolute right-8 bottom-0 w-16 h-16 bg-white/10 rounded-full -mb-6"></div>
             <div className="relative z-10">
@@ -154,7 +154,7 @@ const Servicios = () => {
               <p className="text-white/90 text-sm mt-1">Usa el código: BIENVENIDA</p>
               <button 
                 onClick={() => navigate('/reservar')}
-                className="mt-3 bg-white text-orange-600 font-semibold px-4 py-2 rounded-xl text-sm hover:bg-white/90 transition-colors"
+                className="mt-3 bg-white text-brand-600 font-semibold px-4 py-2 rounded-xl text-sm hover:bg-ivory-100 transition-colors shadow-md"
               >
                 Reservar ahora
               </button>
@@ -164,7 +164,7 @@ const Servicios = () => {
       </div>
 
       {/* Búsqueda y Categorías - STICKY */}
-      <div className="sticky top-0 z-30 bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
+      <div className="sticky top-0 z-30 bg-gradient-to-r from-brand-600 to-brand-500 shadow-lg">
         <div className="px-4 py-3">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -173,13 +173,13 @@ const Servicios = () => {
               placeholder="Buscar servicios..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-300 text-gray-800 shadow-lg"
+              className="w-full pl-12 pr-4 py-3.5 bg-ivory-50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-300 text-gray-800 shadow-lg border border-ivory-300"
             />
           </div>
         </div>
 
         {/* Categorías - Sticky con búsqueda */}
-        <div className="px-4 pb-3 overflow-x-auto bg-gradient-to-r from-emerald-500 to-teal-500">
+        <div className="px-4 pb-3 overflow-x-auto bg-gradient-to-r from-brand-600 to-brand-500">
           <div className="flex gap-2 pb-1">
             {categorias.map(cat => (
               <button
@@ -187,7 +187,7 @@ const Servicios = () => {
                 onClick={() => setCategoriaActiva(cat)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
                   categoriaActiva === cat
-                    ? 'bg-white text-emerald-600 shadow-lg'
+                    ? 'bg-ivory-50 text-brand-600 shadow-lg'
                     : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
               >
@@ -206,7 +206,7 @@ const Servicios = () => {
       {!busqueda && categoriaActiva === 'Todos' && servicios.length > 0 && (
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-gold-500" />
             <h2 className="font-semibold text-gray-900">Destacados</h2>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
@@ -218,7 +218,7 @@ const Servicios = () => {
                   onClick={() => navigate(`/reservar/${servicio._id}`)}
                   className="flex-shrink-0 w-36 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-all"
                 >
-                  <div className="h-20 bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                  <div className="h-20 bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
                     <IconoDest className="w-8 h-8 text-white" />
                   </div>
                   <div className="p-3">
@@ -226,7 +226,7 @@ const Servicios = () => {
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-xs text-gray-400">{servicio.duracion}min</span>
                       <div className="text-right">
-                        <span className="text-emerald-600 font-bold text-sm">${servicio.precio}</span>
+                        <span className="text-brand-600 font-bold text-sm">${servicio.precio}</span>
                         {tasa && <p className="text-[10px] text-gray-400">{formatearBs(servicio.precio)}</p>}
                       </div>
                     </div>
@@ -270,8 +270,8 @@ const Servicios = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center flex-shrink-0">
-                      <IconoServicio className="w-10 h-10 text-emerald-500" />
+                    <div className="w-24 h-24 bg-gradient-to-br from-brand-100 to-ivory-200 flex items-center justify-center flex-shrink-0">
+                      <IconoServicio className="w-10 h-10 text-brand-500" />
                     </div>
                   )}
                   <div className="flex-1 p-4 min-w-0">
@@ -282,14 +282,14 @@ const Servicios = () => {
                         <Clock className="w-4 h-4" /> {servicio.duracion} min
                       </span>
                       <div>
-                        <span className="text-emerald-600 font-bold">${servicio.precio}</span>
+                        <span className="text-brand-600 font-bold">${servicio.precio}</span>
                         {tasa && <span className="text-xs text-gray-400 ml-1">({formatearBs(servicio.precio)})</span>}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center pr-4">
-                    <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center">
-                      <ChevronRight className="w-5 h-5 text-emerald-500" />
+                    <div className="w-8 h-8 bg-brand-50 rounded-full flex items-center justify-center">
+                      <ChevronRight className="w-5 h-5 text-brand-500" />
                     </div>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ const Servicios = () => {
         <div className="px-4 mt-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-900">Nuestros Trabajos</h2>
-            <button className="text-emerald-500 text-sm font-medium flex items-center gap-1">
+            <button className="text-brand-500 text-sm font-medium flex items-center gap-1">
               Ver más <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -332,8 +332,8 @@ const Servicios = () => {
             {resenas.slice(0, 3).map((resena, index) => (
               <div key={resena._id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 stagger-item" style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 font-bold">{(resena.clienteNombre || resena.cliente?.nombre || (typeof resena.cliente === 'string' ? resena.cliente : 'C')).charAt(0)}</span>
+                  <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
+                    <span className="text-brand-600 font-bold">{(resena.clienteNombre || resena.cliente?.nombre || (typeof resena.cliente === 'string' ? resena.cliente : 'C')).charAt(0)}</span>
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{resena.clienteNombre || resena.cliente?.nombre || (typeof resena.cliente === 'string' ? resena.cliente : 'Cliente')}</p>

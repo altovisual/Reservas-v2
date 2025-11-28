@@ -112,8 +112,8 @@ const MiPerfil = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
-        <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="animate-spin w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -133,7 +133,7 @@ const MiPerfil = () => {
   const faltaParaSiguiente = recompensas?.faltaParaSiguiente ?? (nivel.siguiente ? nivel.siguiente - totalGastado : 0);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] pb-24 page-container">
+    <div className="min-h-screen bg-cream pb-24 page-container">
       {/* Header con info del cliente */}
       <div className={`bg-gradient-to-br ${nivel.color} text-white px-4 pt-8 pb-6`}>
         <div className="flex items-center gap-4">
@@ -178,15 +178,15 @@ const MiPerfil = () => {
       <div className="px-4 -mt-3">
         <div className="bg-white rounded-2xl shadow-lg p-4 grid grid-cols-3 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-emerald-600">{totalCitas}</p>
+            <p className="text-2xl font-bold text-brand-600">{totalCitas}</p>
             <p className="text-xs text-gray-500">Citas</p>
           </div>
           <div className="text-center border-x border-gray-100">
-            <p className="text-2xl font-bold text-emerald-600">${totalGastado}</p>
+            <p className="text-2xl font-bold text-gold-500">${totalGastado}</p>
             <p className="text-xs text-gray-500">Total</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-emerald-600">{puntos}</p>
+            <p className="text-2xl font-bold text-brand-500">{puntos}</p>
             <p className="text-xs text-gray-500">Puntos</p>
           </div>
         </div>
@@ -194,7 +194,7 @@ const MiPerfil = () => {
 
       {/* Tabs de navegación */}
       <div className="px-4 mt-4">
-        <div className="flex bg-gray-100 rounded-xl p-1">
+        <div className="flex bg-ivory-100 rounded-xl p-1">
           {[
             { key: 'perfil', label: 'Perfil', icon: CreditCard },
             { key: 'puntos', label: 'Puntos', icon: Award },
@@ -206,7 +206,7 @@ const MiPerfil = () => {
               onClick={() => setSeccionActiva(tab.key)}
               className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-all ${
                 seccionActiva === tab.key
-                  ? 'bg-white text-emerald-600 shadow-sm'
+                  ? 'bg-white text-brand-600 shadow-sm'
                   : 'text-gray-500'
               }`}
             >
