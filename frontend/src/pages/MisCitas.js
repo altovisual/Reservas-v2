@@ -8,7 +8,7 @@ const estadoConfig = {
   pendiente: { color: 'bg-amber-50 text-amber-600 border-amber-200', icon: AlertCircle, texto: 'Pendiente', descripcion: 'Esperando confirmación' },
   confirmada: { color: 'bg-blue-50 text-blue-600 border-blue-200', icon: CheckCircle, texto: 'Confirmada', descripcion: 'Tu cita está confirmada' },
   en_progreso: { color: 'bg-purple-50 text-purple-600 border-purple-200', icon: Clock, texto: 'En progreso', descripcion: 'Servicio en curso' },
-  completada: { color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle, texto: 'Completada', descripcion: 'Servicio finalizado' },
+  completada: { color: 'bg-brand-50 text-brand-600 border-brand-200', icon: CheckCircle, texto: 'Completada', descripcion: 'Servicio finalizado' },
   cancelada: { color: 'bg-red-50 text-red-600 border-red-200', icon: XCircle, texto: 'Cancelada', descripcion: 'Cita cancelada' }
 };
 
@@ -115,21 +115,21 @@ const MisCitas = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
-        <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="animate-spin w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] page-container">
+    <div className="min-h-screen bg-cream page-container">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-4 pb-6">
-        <button onClick={() => navigate('/servicios')} className="flex items-center gap-2 text-emerald-100 hover:text-white transition-colors">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-500 to-teal-600 text-white p-4 pb-6">
+        <button onClick={() => navigate('/servicios')} className="flex items-center gap-2 text-brand-100 hover:text-white transition-colors">
           <ArrowLeft className="w-5 h-5" /> Volver
         </button>
         <h1 className="text-xl font-bold mt-3">Mis Citas</h1>
-        <p className="text-emerald-100 text-sm mt-1">Historial y próximas citas</p>
+        <p className="text-brand-100 text-sm mt-1">Historial y próximas citas</p>
       </div>
 
       {/* Filtros */}
@@ -147,8 +147,8 @@ const MisCitas = () => {
                 onClick={() => setFiltro(f.key)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   filtro === f.key
-                    ? 'bg-white text-emerald-600 shadow-sm'
-                    : 'bg-white/20 text-gray-600'
+                    ? 'bg-white text-brand-600 shadow-sm'
+                    : 'bg-ivory-100 text-gray-600'
                 }`}
               >
                 {f.label}
@@ -160,9 +160,9 @@ const MisCitas = () => {
 
       {/* Mensaje éxito */}
       {mensaje && (
-        <div className="mx-4 mt-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-5 h-5 text-emerald-600" />
+        <div className="mx-4 mt-4 p-4 bg-brand-50 border border-brand-200 text-brand-700 rounded-2xl flex items-center gap-3">
+          <div className="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-5 h-5 text-brand-600" />
           </div>
           <span className="font-medium">{mensaje}</span>
         </div>
@@ -178,7 +178,7 @@ const MisCitas = () => {
             <p className="text-gray-400 text-sm mt-1">Reserva tu primera cita ahora</p>
             <button
               onClick={() => navigate('/servicios')}
-              className="mt-6 px-8 py-3 bg-emerald-500 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors"
+              className="mt-6 px-8 py-3 bg-brand-500 text-white rounded-xl font-semibold shadow-lg shadow-brand-500/30 hover:bg-brand-600 transition-colors"
             >
               Reservar ahora
             </button>
@@ -191,7 +191,7 @@ const MisCitas = () => {
             <p className="text-gray-500 text-lg">No tienes citas registradas</p>
             <button
               onClick={() => navigate('/servicios')}
-              className="mt-6 px-8 py-3 bg-emerald-500 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors"
+              className="mt-6 px-8 py-3 bg-brand-500 text-white rounded-xl font-semibold shadow-lg shadow-brand-500/30 hover:bg-brand-600 transition-colors"
             >
               Reservar cita
             </button>
@@ -245,7 +245,7 @@ const MisCitas = () => {
                     </div>
                     <div className="ml-auto text-right">
                       <p className="text-xs text-gray-400">Total</p>
-                      <p className="text-lg font-bold text-emerald-600">${cita.total}</p>
+                      <p className="text-lg font-bold text-brand-600">${cita.total}</p>
                       {tasa && <p className="text-xs text-gray-400">{formatearBs(cita.total)}</p>}
                     </div>
                   </div>
@@ -261,12 +261,12 @@ const MisCitas = () => {
 
                   {cita.estado === 'completada' && !cita.calificacion && (
                     <div 
-                      className="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100"
+                      className="mt-4 p-4 bg-brand-50 rounded-xl border border-brand-100"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <MessageSquare className="w-4 h-4 text-emerald-600" />
-                        <p className="text-sm font-medium text-emerald-800">¿Cómo fue tu experiencia?</p>
+                        <MessageSquare className="w-4 h-4 text-brand-600" />
+                        <p className="text-sm font-medium text-brand-800">¿Cómo fue tu experiencia?</p>
                       </div>
                       <div className="flex gap-2 justify-center">
                         {[1,2,3,4,5].map(n => (
@@ -449,7 +449,7 @@ const MisCitas = () => {
                     {modalDetalle.servicios.map((s, i) => (
                       <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                         <span className="font-medium text-gray-900 text-sm">{s.nombreServicio}</span>
-                        <span className="text-emerald-600 font-semibold text-sm">${s.precio}</span>
+                        <span className="text-brand-600 font-semibold text-sm">${s.precio}</span>
                       </div>
                     ))}
                   </div>
@@ -478,15 +478,15 @@ const MisCitas = () => {
               </div>
 
               {/* Total */}
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <div className="p-4 bg-brand-50 rounded-xl border border-brand-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-700">
+                  <div className="flex items-center gap-2 text-brand-700">
                     <DollarSign className="w-5 h-5" />
                     <span className="font-medium">Total a pagar</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-emerald-600">${modalDetalle.total}</span>
-                    {tasa && <p className="text-sm text-emerald-600">{formatearBs(modalDetalle.total)}</p>}
+                    <span className="text-2xl font-bold text-brand-600">${modalDetalle.total}</span>
+                    {tasa && <p className="text-sm text-brand-600">{formatearBs(modalDetalle.total)}</p>}
                   </div>
                 </div>
               </div>
@@ -545,7 +545,7 @@ const MisCitas = () => {
               {modalDetalle.estado === 'confirmada' && (
                 <a
                   href={`tel:+580000000000`}
-                  className="w-full py-3.5 bg-emerald-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+                  className="w-full py-3.5 bg-brand-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-brand-600 transition-colors"
                 >
                   <Phone className="w-5 h-5" /> Llamar al spa
                 </a>
@@ -572,12 +572,12 @@ const MisCitas = () => {
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-6 text-center bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+            <div className="p-6 text-center bg-gradient-to-r from-brand-500 to-brand-600 text-white">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Star className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold">¿Cómo fue tu experiencia?</h3>
-              <p className="text-emerald-100 text-sm mt-1">
+              <p className="text-brand-100 text-sm mt-1">
                 {modalCalificar.servicios?.map(s => s.nombreServicio).join(', ')}
               </p>
             </div>
@@ -616,7 +616,7 @@ const MisCitas = () => {
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Cuéntanos más sobre tu experiencia (opcional)"
-                className="w-full p-4 border border-gray-200 rounded-2xl resize-none h-24 focus:outline-none focus:ring-2 focus:ring-emerald-300 text-gray-700"
+                className="w-full p-4 border border-gray-200 rounded-2xl resize-none h-24 focus:outline-none focus:ring-2 focus:ring-brand-300 text-gray-700"
               />
             </div>
 
@@ -631,7 +631,7 @@ const MisCitas = () => {
               <button
                 onClick={enviarCalificacion}
                 disabled={calificacion === 0 || enviandoResena}
-                className="flex-1 py-3.5 bg-emerald-500 text-white rounded-2xl font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-3.5 bg-brand-500 text-white rounded-2xl font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {enviandoResena ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

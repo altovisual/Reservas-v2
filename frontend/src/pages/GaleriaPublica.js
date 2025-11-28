@@ -131,9 +131,9 @@ const GaleriaPublica = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+          <div className="animate-spin w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full mx-auto"></div>
           <p className="mt-4 text-gray-500">Cargando galería...</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ const GaleriaPublica = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24 page-container">
+    <div className="min-h-screen bg-cream pb-24 page-container">
       {/* Header estilo Instagram */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between px-4 py-3">
@@ -152,19 +152,19 @@ const GaleriaPublica = () => {
             <ArrowLeft className="w-6 h-6 text-gray-800" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-emerald-500" />
+            <Sparkles className="w-5 h-5 text-brand-500" />
             Galería
           </h1>
           <div className="flex items-center gap-1">
             <button 
               onClick={() => setVistaGrid(true)}
-              className={`p-2 rounded-lg transition-colors ${vistaGrid ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-lg transition-colors ${vistaGrid ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Grid3X3 className="w-5 h-5" />
             </button>
             <button 
               onClick={() => setVistaGrid(false)}
-              className={`p-2 rounded-lg transition-colors ${!vistaGrid ? 'bg-emerald-50 text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`p-2 rounded-lg transition-colors ${!vistaGrid ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <LayoutGrid className="w-5 h-5" />
             </button>
@@ -180,8 +180,8 @@ const GaleriaPublica = () => {
                 onClick={() => setFiltro(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   filtro === cat
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-ivory-100 text-gray-600 hover:bg-ivory-200'
                 }`}
               >
                 {cat === 'todas' ? '✨ Todas' : cat}
@@ -192,7 +192,7 @@ const GaleriaPublica = () => {
       </div>
 
       {/* Contador de resultados */}
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+      <div className="px-4 py-3 bg-ivory-50 border-b border-ivory-200">
         <p className="text-sm text-gray-500">
           <span className="font-semibold text-gray-900">{imagenesFiltradas.length}</span> trabajos
           {filtro !== 'todas' && <span> en {filtro}</span>}
@@ -232,7 +232,7 @@ const GaleriaPublica = () => {
             <div key={img._id} className="bg-white">
               {/* Header del post */}
               <div className="flex items-center gap-3 px-4 py-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
