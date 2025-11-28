@@ -473,8 +473,8 @@ const MisCitas = () => {
                   <MapPin className="w-4 h-4" />
                   <span className="text-xs">Ubicación</span>
                 </div>
-                <p className="font-semibold text-gray-900 text-sm">Nail Spa</p>
-                <p className="text-xs text-gray-500">San Felipe, Yaracuy</p>
+                <p className="font-semibold text-gray-900 text-sm">Lwise Spa</p>
+                <p className="text-xs text-gray-500">C.C VALCO</p>
               </div>
 
               {/* Total */}

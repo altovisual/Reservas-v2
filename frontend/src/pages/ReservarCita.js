@@ -35,7 +35,7 @@ const ReservarCita = () => {
   // Datos del negocio para pagos
   const datosNegocio = {
     pagoMovil: { banco: 'Banesco', telefono: '0424-5551234', cedula: 'V-12345678' },
-    transferencia: { banco: 'Banesco', cuenta: '0134-0000-00-0000000000', titular: 'Nail Spa C.A.', rif: 'J-12345678-9' }
+    transferencia: { banco: 'Banesco', cuenta: '0134-0000-00-0000000000', titular: 'Lwise Garcia Spa', rif: 'J-12345678-9' }
   };
 
   // Estado para días disponibles

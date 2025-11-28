@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, CreditCard, ArrowRight, UserPlus, LogIn, Gift, Calendar, Sparkles } from 'lucide-react';
+import { User, Phone, Mail, CreditCard, ArrowRight, UserPlus, LogIn, Gift, Calendar } from 'lucide-react';
 import api from '../services/api';
 
 const ClienteAuth = () => {
@@ -77,10 +77,10 @@ const ClienteAuth = () => {
       <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 text-white px-4 pt-12 pb-8">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="w-8 h-8" />
-            <h1 className="text-3xl font-bold">Nail Spa</h1>
+            <img src="/logo.png" alt="Lwise Spa" className="w-12 h-12 rounded-xl" />
+            <h1 className="text-3xl font-bold">Lwise Spa</h1>
           </div>
-          <p className="text-emerald-100">San Felipe, Yaracuy</p>
+          <p className="text-teal-100">C.C VALCO • Lun-Sab 8AM-6PM</p>
         </div>
       </div>
 

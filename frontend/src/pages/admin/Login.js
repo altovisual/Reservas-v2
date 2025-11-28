@@ -31,10 +31,8 @@ const Login = () => {
       <div className="w-full max-w-md">
         {/* Logo Card */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
-            <span className="text-4xl">💅</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Nail Spa</h1>
+          <img src="/logo.png" alt="Lwise Spa" className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-lg" />
+          <h1 className="text-2xl font-bold text-gray-900">Lwise Spa</h1>
           <p className="text-gray-500 mt-1">Panel de Administración</p>
         </div>
 
@@ -61,7 +59,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -76,7 +74,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -85,7 +83,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-emerald-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
+              className="w-full py-3.5 bg-teal-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
             >
               {loading ? (
                 <>
@@ -104,7 +102,7 @@ const Login = () => {
         </div>
 
         <p className="text-center text-gray-400 text-sm mt-6">
-          © 2024 Nail Spa. Todos los derechos reservados.
+          © 2024 Lwise Garcia Spa. Todos los derechos reservados.
         </p>
       </div>
     </div>

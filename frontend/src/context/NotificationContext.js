@@ -116,7 +116,7 @@ export const NotificationProvider = ({ children }) => {
 
     // Mostrar notificación del navegador si está permitido
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      new Notification('💅 Nueva Reserva - Nail Spa', {
+      new Notification('💅 Nueva Reserva - Lwise Spa', {
         body: notification.message,
         icon: '/favicon.ico',
         tag: 'nueva-cita-' + Date.now(),

@@ -51,7 +51,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'nueva_cita': return <CalendarPlus className="w-4 h-4 text-emerald-500" />;
+      case 'nueva_cita': return <CalendarPlus className="w-4 h-4 text-teal-600" />;
       case 'cita_cancelada': return <CalendarX className="w-4 h-4 text-red-500" />;
       case 'cita_reagendada': return <CalendarClock className="w-4 h-4 text-amber-500" />;
       default: return <Bell className="w-4 h-4 text-gray-500" />;
@@ -112,11 +112,9 @@ const AdminLayout = ({ children, title, subtitle }) => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">💅</span>
-            </div>
+            <img src="/logo.png" alt="Lwise Spa" className="w-10 h-10 rounded-xl object-cover" />
             <div>
-              <h1 className="font-semibold text-gray-900">Nail Spa</h1>
+              <h1 className="font-semibold text-gray-900">Lwise Spa</h1>
               <p className="text-xs text-gray-500">Panel Admin</p>
             </div>
           </div>
@@ -130,14 +128,14 @@ const AdminLayout = ({ children, title, subtitle }) => {
               onClick={() => navigate(item.path)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 isActive(item.path)
-                  ? 'bg-emerald-50 text-emerald-600'
+                  ? 'bg-teal-50 text-teal-700'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-emerald-500' : 'text-gray-400'}`} />
+              <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-teal-600' : 'text-gray-400'}`} />
               <span className="font-medium">{item.label}</span>
               {isActive(item.path) && (
-                <div className="ml-auto w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                <div className="ml-auto w-1.5 h-1.5 bg-teal-600 rounded-full"></div>
               )}
             </button>
           ))}
@@ -146,8 +144,8 @@ const AdminLayout = ({ children, title, subtitle }) => {
         {/* User Section */}
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-              <span className="text-emerald-600 font-semibold">
+            <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+              <span className="text-teal-700 font-semibold">
                 {admin?.nombre?.charAt(0) || 'A'}
               </span>
             </div>
@@ -177,10 +175,8 @@ const AdminLayout = ({ children, title, subtitle }) => {
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm">💅</span>
-              </div>
-              <span className="font-semibold text-gray-900">Nail Spa</span>
+              <img src="/logo.png" alt="Lwise Spa" className="w-8 h-8 rounded-lg object-cover" />
+              <span className="font-semibold text-gray-900">Lwise Spa</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -236,7 +232,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
                           className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            !notification.read ? 'bg-emerald-50/50' : ''
+                            !notification.read ? 'bg-teal-50/50' : ''
                           }`}
                         >
                           <div className="flex gap-3">
@@ -249,7 +245,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                               <p className="text-gray-400 text-xs mt-1">{formatTimeAgo(notification.timestamp)}</p>
                             </div>
                             {!notification.read && (
-                              <div className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0 mt-2"></div>
+                              <div className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0 mt-2"></div>
                             )}
                           </div>
                         </div>
@@ -260,7 +256,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                     <div className="p-3 border-t border-gray-100 text-center">
                       <button 
                         onClick={() => { navigate('/admin/citas'); setNotificationsOpen(false); }}
-                        className="text-emerald-500 text-sm font-medium hover:text-emerald-600"
+                        className="text-teal-600 text-sm font-medium hover:text-teal-700"
                       >
                         Ver todas las citas
                       </button>
@@ -290,11 +286,9 @@ const AdminLayout = ({ children, title, subtitle }) => {
             {/* Logo */}
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white text-lg">💅</span>
-                </div>
+                <img src="/logo.png" alt="Lwise Spa" className="w-10 h-10 rounded-xl object-cover" />
                 <div>
-                  <h1 className="font-semibold text-gray-900">Nail Spa</h1>
+                  <h1 className="font-semibold text-gray-900">Lwise Spa</h1>
                   <p className="text-xs text-gray-500">Panel Admin</p>
                 </div>
               </div>
@@ -314,13 +308,13 @@ const AdminLayout = ({ children, title, subtitle }) => {
                   onClick={() => { navigate(item.path); setSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive(item.path)
-                      ? 'bg-emerald-50 text-emerald-600'
+                      ? 'bg-teal-50 text-teal-700'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-emerald-500' : 'text-gray-400'}`} />
+                  <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-teal-600' : 'text-gray-400'}`} />
                   <span className="font-medium">{item.label}</span>
-                  <ChevronRight className={`w-4 h-4 ml-auto ${isActive(item.path) ? 'text-emerald-400' : 'text-gray-300'}`} />
+                  <ChevronRight className={`w-4 h-4 ml-auto ${isActive(item.path) ? 'text-teal-500' : 'text-gray-300'}`} />
                 </button>
               ))}
             </nav>
@@ -328,8 +322,8 @@ const AdminLayout = ({ children, title, subtitle }) => {
             {/* User Section */}
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="text-emerald-600 font-semibold">
+                <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                  <span className="text-teal-700 font-semibold">
                     {admin?.nombre?.charAt(0) || 'A'}
                   </span>
                 </div>
@@ -412,7 +406,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
                           className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            !notification.read ? 'bg-emerald-50/50' : ''
+                            !notification.read ? 'bg-teal-50/50' : ''
                           }`}
                         >
                           <div className="flex gap-3">
@@ -425,7 +419,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                               <p className="text-gray-400 text-xs mt-1">{formatTimeAgo(notification.timestamp)}</p>
                             </div>
                             {!notification.read && (
-                              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full flex-shrink-0 mt-2"></div>
+                              <div className="w-2.5 h-2.5 bg-teal-500 rounded-full flex-shrink-0 mt-2"></div>
                             )}
                           </div>
                         </div>
@@ -436,7 +430,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
                     <div className="p-3 border-t border-gray-100 text-center">
                       <button 
                         onClick={() => { navigate('/admin/citas'); setNotificationsOpen(false); }}
-                        className="text-emerald-500 text-sm font-medium hover:text-emerald-600"
+                        className="text-teal-600 text-sm font-medium hover:text-teal-700"
                       >
                         Ver todas las citas
                       </button>

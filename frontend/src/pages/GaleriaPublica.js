@@ -18,7 +18,7 @@ const GaleriaPublica = () => {
 
   // Función para compartir
   const compartir = async (img) => {
-    const texto = `¡Mira este increíble trabajo de Nail Spa! 💅✨\n${img.titulo}`;
+    const texto = `¡Mira este increíble trabajo de Lwise Spa! 💅✨\n${img.titulo}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -236,7 +236,7 @@ const GaleriaPublica = () => {
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">Nail Spa</p>
+                  <p className="font-semibold text-gray-900 text-sm">Lwise Spa</p>
                   <p className="text-xs text-gray-500">{img.categoria}</p>
                 </div>
               </div>

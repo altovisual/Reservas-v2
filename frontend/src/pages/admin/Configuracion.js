@@ -24,7 +24,7 @@ const Configuracion = () => {
   
   const [config, setConfig] = useState({
     negocio: {
-      nombre: 'Nail Spa',
+      nombre: 'Lwise Garcia Spa',
       descripcion: 'Tu destino de belleza para uñas perfectas',
       telefono: '809-555-0100',
       email: 'info@nailspa.com',

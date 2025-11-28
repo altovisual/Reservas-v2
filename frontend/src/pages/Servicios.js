@@ -99,7 +99,7 @@ const Servicios = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Sparkles className="w-6 h-6" /> {cliente ? `Hola, ${cliente.nombre}` : 'Nail Spa'}
+                <img src="/logo.png" alt="Lwise Spa" className="w-8 h-8 rounded-lg" /> {cliente ? `Hola, ${cliente.nombre}` : 'Lwise Spa'}
               </h1>
               <p className="text-emerald-100 text-sm mt-1">
                 {cliente ? 'Bienvenida a tu destino de belleza ✨' : 'Tu destino de belleza'}

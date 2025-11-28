@@ -107,7 +107,7 @@ const MiPerfil = () => {
   };
 
   const abrirWhatsApp = () => {
-    window.open('https://wa.me/584141234567?text=Hola,%20quiero%20información%20sobre%20los%20servicios', '_blank');
+    window.open('https://wa.me/message/BMBL46TI6VYXG1', '_blank');
   };
 
   if (loading) {

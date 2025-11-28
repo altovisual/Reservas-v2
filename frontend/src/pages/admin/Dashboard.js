@@ -38,7 +38,7 @@ const Dashboard = () => {
   };
 
   const compartirWhatsApp = () => {
-    const mensaje = encodeURIComponent(`¡Reserva tu cita en Nail Spa! 💅\n\n${reservasUrl}`);
+    const mensaje = encodeURIComponent(`¡Reserva tu cita en Lwise Spa! 💅\n\n${reservasUrl}`);
     window.open(`https://wa.me/?text=${mensaje}`, '_blank');
   };
 
@@ -46,8 +46,8 @@ const Dashboard = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Nail Spa - Reserva tu cita',
-          text: '¡Reserva tu cita en Nail Spa! 💅',
+          title: 'Lwise Spa - Reserva tu cita',
+          text: '¡Reserva tu cita en Lwise Spa! 💅',
           url: reservasUrl,
         });
       } catch (err) {

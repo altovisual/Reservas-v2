@@ -198,7 +198,7 @@ const ResenasPublicas = () => {
                   {/* Respuesta del negocio */}
                   {resena.respuesta && (
                     <div className="mt-3 bg-emerald-50 rounded-xl p-3">
-                      <p className="text-xs font-semibold text-emerald-700 mb-1">Respuesta de Nail Spa:</p>
+                      <p className="text-xs font-semibold text-emerald-700 mb-1">Respuesta de Lwise Spa:</p>
                       <p className="text-sm text-emerald-800">{resena.respuesta}</p>
                     </div>
                   )}
