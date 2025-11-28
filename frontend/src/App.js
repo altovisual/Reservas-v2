@@ -25,6 +25,7 @@ import Resenas from './pages/admin/Resenas';
 import Pagos from './pages/admin/Pagos';
 import Horarios from './pages/admin/Horarios';
 import TasaBcv from './pages/admin/TasaBcv';
+import Recompensas from './pages/admin/Recompensas';
 import ProtectedRoute from './components/ProtectedRoute';
 import BottomNav from './components/BottomNav';
 
@@ -62,6 +63,7 @@ function AppContent() {
             <Route path="/admin/pagos" element={<ProtectedRoute><Pagos /></ProtectedRoute>} />
             <Route path="/admin/horarios" element={<ProtectedRoute><Horarios /></ProtectedRoute>} />
             <Route path="/admin/tasa-bcv" element={<ProtectedRoute><TasaBcv /></ProtectedRoute>} />
+            <Route path="/admin/recompensas" element={<ProtectedRoute><Recompensas /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>

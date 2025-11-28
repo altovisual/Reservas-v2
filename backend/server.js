@@ -65,6 +65,7 @@ const resenasRoutes = require('./routes/resenas');
 const horariosRoutes = require('./routes/horarios');
 const reportesRoutes = require('./routes/reportes');
 const tasaBcvRoutes = require('./routes/tasaBcv');
+const recompensasRoutes = require('./routes/recompensas');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
@@ -79,6 +80,7 @@ app.use('/api/resenas', resenasRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/reportes', reportesRoutes);
 app.use('/api/tasa-bcv', tasaBcvRoutes);
+app.use('/api/recompensas', recompensasRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {

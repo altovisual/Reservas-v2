@@ -25,7 +25,8 @@ import {
   CalendarPlus,
   CalendarX,
   CalendarClock,
-  DollarSign
+  DollarSign,
+  Award
 } from 'lucide-react';
 
 const AdminLayout = ({ children, title, subtitle }) => {
@@ -88,6 +89,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
     { label: 'Reseñas', icon: Star, path: '/admin/resenas' },
     { label: 'Reportes', icon: BarChart3, path: '/admin/reportes' },
     { label: 'Tasa BCV', icon: DollarSign, path: '/admin/tasa-bcv' },
+    { label: 'Recompensas', icon: Award, path: '/admin/recompensas' },
     { label: 'Configuración', icon: Cog, path: '/admin/configuracion' },
   ];
 
