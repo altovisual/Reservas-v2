@@ -210,7 +210,7 @@ const ClienteAuth = () => {
                       value={formRegistro.nombre}
                       onChange={(e) => setFormRegistro({...formRegistro, nombre: e.target.value})}
                       className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      placeholder="María"
+                      placeholder="Nombre"
                       required
                     />
                   </div>
@@ -222,7 +222,7 @@ const ClienteAuth = () => {
                     value={formRegistro.apellido}
                     onChange={(e) => setFormRegistro({...formRegistro, apellido: e.target.value})}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="González"
+                    placeholder="Apellido"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ const ClienteAuth = () => {
                     value={formRegistro.email}
                     onChange={(e) => setFormRegistro({...formRegistro, email: e.target.value})}
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="maria@email.com"
+                    placeholder="correo@email.com"
                   />
                 </div>
               </div>
