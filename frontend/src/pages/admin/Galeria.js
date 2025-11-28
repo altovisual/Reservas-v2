@@ -123,34 +123,42 @@ const Galeria = () => {
     }
   };
 
+  const [subiendo, setSubiendo] = useState(false);
+
   const subirImagen = async () => {
+    if (!form.titulo || !form.imagen) {
+      alert('Por favor completa el título y selecciona una imagen');
+      return;
+    }
+
+    setSubiendo(true);
     try {
+      // 1. Subir imagen a Cloudinary
       const formData = new FormData();
-      formData.append('titulo', form.titulo);
-      formData.append('categoria', form.categoria);
-      formData.append('descripcion', form.descripcion);
-      if (form.imagen) {
-        formData.append('imagen', form.imagen);
-      }
+      formData.append('imagen', form.imagen);
       
-      await api.post('/galeria', formData);
+      const uploadResponse = await api.post('/galeria/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // 2. Crear registro en la base de datos con la URL de Cloudinary
+      const imagenData = {
+        titulo: form.titulo,
+        categoria: form.categoria,
+        descripcion: form.descripcion,
+        imagen: uploadResponse.data.url
+      };
+      
+      await api.post('/galeria', imagenData);
+      
       setModalSubir(false);
       setForm({ titulo: '', categoria: 'Manicure', descripcion: '', imagen: null, preview: null });
       cargarImagenes();
     } catch (error) {
-      // Simular subida exitosa
-      const nuevaImagen = {
-        _id: Date.now().toString(),
-        titulo: form.titulo,
-        categoria: form.categoria,
-        descripcion: form.descripcion,
-        imagen: form.preview || 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400',
-        likes: 0,
-        fecha: new Date().toISOString().split('T')[0]
-      };
-      setImagenes(prev => [nuevaImagen, ...prev]);
-      setModalSubir(false);
-      setForm({ titulo: '', categoria: 'Manicure', descripcion: '', imagen: null, preview: null });
+      console.error('Error subiendo imagen:', error);
+      alert('Error al subir la imagen. Verifica que Cloudinary esté configurado correctamente.');
+    } finally {
+      setSubiendo(false);
     }
   };
 
@@ -430,10 +438,17 @@ const Galeria = () => {
               </button>
               <button
                 onClick={subirImagen}
-                disabled={!form.titulo}
-                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                disabled={!form.titulo || !form.imagen || subiendo}
+                className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Subir
+                {subiendo ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Subiendo...
+                  </>
+                ) : (
+                  'Subir'
+                )}
               </button>
             </div>
           </div>
